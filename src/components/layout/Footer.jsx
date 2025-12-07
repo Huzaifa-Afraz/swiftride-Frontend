@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom'; // Import Link
 import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react';
 
 const Footer = () => {
@@ -23,10 +24,10 @@ const Footer = () => {
         <div>
           <h3 className="text-white font-semibold mb-4">Company</h3>
           <ul className="space-y-2 text-sm">
-            <li className="hover:text-white cursor-pointer">About Us</li>
-            <li className="hover:text-white cursor-pointer">Careers</li>
-            <li className="hover:text-white cursor-pointer">Blog</li>
-            <li className="hover:text-white cursor-pointer">Press</li>
+            <li><Link to="/about" className="hover:text-white transition">About Us</Link></li>
+            <li><Link to="/careers" className="hover:text-white transition">Careers</Link></li>
+            <li><Link to="/blog" className="hover:text-white transition">Blog</Link></li>
+            <li><Link to="/press" className="hover:text-white transition">Press</Link></li>
           </ul>
         </div>
 
@@ -34,10 +35,10 @@ const Footer = () => {
         <div>
           <h3 className="text-white font-semibold mb-4">Support</h3>
           <ul className="space-y-2 text-sm">
-            <li className="hover:text-white cursor-pointer">Help Center</li>
-            <li className="hover:text-white cursor-pointer">Terms of Service</li>
-            <li className="hover:text-white cursor-pointer">Privacy Policy</li>
-            <li className="hover:text-white cursor-pointer">Trust & Safety</li>
+            <li><Link to="/help" className="hover:text-white transition">Help Center</Link></li>
+            <li><Link to="/terms" className="hover:text-white transition">Terms of Service</Link></li>
+            <li><Link to="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
+            <li><Link to="/trust" className="hover:text-white transition">Trust & Safety</Link></li>
           </ul>
         </div>
 

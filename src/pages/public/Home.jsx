@@ -1,31 +1,50 @@
 import React, { useEffect, useState } from 'react';
 import { carService } from '../../services/carService';
-import { Link } from 'react-router-dom';
-import { Search, Calendar, MapPin, ShieldCheck, Clock, Award } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, ShieldCheck, Clock, Award, MapPin } from 'lucide-react';
 
 const Home = () => {
+  const navigate = useNavigate();
+  // 1. Initialize as an empty array [] so it never starts as undefined
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Search State (Visual only for now, but wired to UI)
+  // Search State
   const [location, setLocation] = useState('');
   const [make, setMake] = useState('');
 
   useEffect(() => {
-    // Fetch cars from your API
-    carService.getCars({ page: 1, limit: 6 }) // Limiting to top 6 for the homepage
+    carService.getCars({ page: 1, limit: 6 })
       .then(res => {
-        setCars(res.data.docs || res.data);
+        console.log("API Response for Cars:", res.data); // Debug: Check console to see structure
+        
+        // 2. SAFETY CHECK: Extract the array correctly
+        // Some APIs return { docs: [] }, others return { data: [] }, or just []
+        const carData = res.data.docs || res.data.cars || res.data;
+        
+        // Ensure strictly that we are setting an array
+        if (Array.isArray(carData)) {
+          setCars(carData);
+        } else {
+          console.error("API did not return an array:", carData);
+          setCars([]); // Fallback to empty list to prevent crash
+        }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error("Failed to fetch cars:", err);
+        setCars([]); // Fallback to empty list on error
+        setLoading(false);
+      });
   }, []);
-
+const handleSearch = () => {
+    // Navigate to /search with query parameters
+    navigate(`/search?locationAddress=${location}&make=${make}`);
+  };
   return (
     <div className="bg-white">
       {/* 1. HERO SECTION */}
       <div className="relative bg-slate-900 text-white py-24 lg:py-32 overflow-hidden">
-        {/* Background Pattern/Image overlay */}
         <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80')] bg-cover bg-center"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/50 to-slate-900"></div>
         
@@ -43,7 +62,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* 2. SEARCH BAR (Floating) */}
+      {/* 2. SEARCH BAR */}
       <div className="max-w-5xl mx-auto px-6 -mt-10 relative z-20">
         <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 flex flex-col md:flex-row gap-4 items-end border border-gray-100">
           <div className="w-full md:w-1/3">
@@ -74,22 +93,31 @@ const Home = () => {
             </div>
           </div>
 
-          <button className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-8 rounded-lg transition shadow-lg shadow-indigo-200">
+          {/* <button className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-8 rounded-lg transition shadow-lg shadow-indigo-200">
             Search Cars
-          </button>
+          </button> */}
+          <button 
+      onClick={handleSearch}
+      className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-8 rounded-lg transition shadow-lg shadow-indigo-200"
+    >
+      Search Cars
+    </button>
         </div>
       </div>
 
-      {/* 3. API DATA SECTION (Featured Cars) */}
+      {/* 3. API DATA SECTION */}
       <div className="max-w-7xl mx-auto px-6 py-20">
         <div className="flex justify-between items-end mb-12">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Top Rated Vehicles</h2>
             <p className="text-gray-500">Explore the highest-rated cars from our hosts</p>
           </div>
-          <Link to="/search" className="hidden md:block text-indigo-600 font-semibold hover:text-indigo-800 transition">
+          {/* <Link to="/search" className="hidden md:block text-indigo-600 font-semibold hover:text-indigo-800 transition">
             View All Cars &rarr;
-          </Link>
+          </Link> */}
+          <Link to="/search" className="hidden md:block text-indigo-600 font-semibold hover:text-indigo-800 transition">
+       View All Cars &rarr;
+    </Link>
         </div>
 
         {loading ? (
@@ -100,56 +128,63 @@ const Home = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {cars.map(car => (
-              <div key={car._id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
-                {/* Image Area */}
-                <div className="relative h-56 bg-gray-200 overflow-hidden">
-                  {car.photos && car.photos.length > 0 ? (
-                    <img 
-                      src={car.photos[0]} 
-                      alt={`${car.make} ${car.model}`} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-gray-400">No Image Available</div>
-                  )}
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur text-xs font-bold px-2 py-1 rounded shadow">
-                    {car.year}
+            {/* 3. SAFETY CHECK: Check array length before mapping */}
+            {cars && cars.length > 0 ? (
+              cars.map(car => (
+                <div key={car._id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
+                  {/* Image Area */}
+                  <div className="relative h-56 bg-gray-200 overflow-hidden">
+                    {car.photos && car.photos.length > 0 ? (
+                      <img 
+                        src={car.photos[0]} 
+                        alt={`${car.make} ${car.model}`} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-400">No Image Available</div>
+                    )}
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur text-xs font-bold px-2 py-1 rounded shadow">
+                      {car.year}
+                    </div>
+                  </div>
+
+                  {/* Content Area */}
+                  <div className="p-6 flex flex-col flex-grow">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">{car.make} {car.model}</h3>
+                        <p className="text-sm text-gray-500">{car.transmission} • {car.fuelType}</p>
+                      </div>
+                      <div className="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-1 rounded text-xs font-bold">
+                         Available
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+                      <MapPin className="w-4 h-4" />
+                      <span className="truncate">{car.locationAddress || 'Islamabad, Pakistan'}</span>
+                    </div>
+
+                    <div className="mt-auto flex items-center justify-between border-t pt-4">
+                      <div>
+                        <span className="text-2xl font-bold text-indigo-600">PKR {car.pricePerDay}</span>
+                        <span className="text-xs text-gray-400 ml-1">/ day</span>
+                      </div>
+                      <Link 
+                        to={`/cars/${car._id}`} 
+                        className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black transition"
+                      >
+                        View Details
+                      </Link>
+                    </div>
                   </div>
                 </div>
-
-                {/* Content Area */}
-                <div className="p-6 flex flex-col flex-grow">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900">{car.make} {car.model}</h3>
-                      <p className="text-sm text-gray-500">{car.transmission} • {car.fuelType}</p>
-                    </div>
-                    <div className="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-1 rounded text-xs font-bold">
-                       Available
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-                    <MapPin className="w-4 h-4" />
-                    <span className="truncate">{car.locationAddress || 'Islamabad, Pakistan'}</span>
-                  </div>
-
-                  <div className="mt-auto flex items-center justify-between border-t pt-4">
-                    <div>
-                      <span className="text-2xl font-bold text-indigo-600">PKR {car.pricePerDay}</span>
-                      <span className="text-xs text-gray-400 ml-1">/ day</span>
-                    </div>
-                    <Link 
-                      to={`/cars/${car._id}`} 
-                      className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black transition"
-                    >
-                      View Details
-                    </Link>
-                  </div>
-                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-20 bg-gray-50 rounded-xl">
+                <p className="text-gray-500 text-lg">No cars available at the moment.</p>
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>

@@ -2,19 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { bookingService } from '../../services/bookingService';
 import { paymentService, redirectToPaymentGateway } from '../../services/paymentService';
 import { showAlert } from '../../utils/alert';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, FileText, AlertCircle } from 'lucide-react';
 
 const MyBookings = () => {
-  const [bookings, setBookings] = useState([]);
+  // Initialize as empty array to prevent "map is not a function" error
+  const [bookings, setBookings] = useState([]); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     bookingService.getMyBookings()
       .then(res => {
-        setBookings(res.data.docs || res.data); // Adjust depending on if backend paginates
+        // SAFETY CHECK: Extract array from { docs: [] } or direct []
+        const data = res.data.docs || res.data || [];
+        setBookings(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch(err => setLoading(false));
+      .catch(err => {
+        console.error("Failed to load bookings", err);
+        setBookings([]);
+        setLoading(false);
+      });
   }, []);
 
   const handlePay = async (bookingId) => {
@@ -24,6 +31,22 @@ const MyBookings = () => {
       redirectToPaymentGateway(paymentPageUrl, payload);
     } catch (err) {
       showAlert('Error', 'Could not initialize payment', 'error');
+    }
+  };
+
+  const handleDownloadInvoice = async (bookingId) => {
+    try {
+      const response = await bookingService.getInvoice(bookingId);
+      // Create a blob link to download file
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `invoice-${bookingId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      showAlert('Error', 'Could not download invoice', 'error');
     }
   };
 
@@ -42,51 +65,64 @@ const MyBookings = () => {
     <div className="max-w-6xl mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold mb-8">My Bookings</h1>
       
-      {bookings.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-xl shadow-sm">
+      {(!bookings || bookings.length === 0) ? (
+        <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-dashed">
+          <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500 text-lg">You haven't booked any cars yet.</p>
         </div>
       ) : (
         <div className="space-y-6">
           {bookings.map(booking => (
-            <div key={booking._id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div key={booking._id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 hover:shadow-md transition">
               
               {/* Car Info */}
-              <div className="flex items-center gap-4 flex-1">
-                <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden">
-                   {booking.carId?.photos?.[0] && <img src={booking.carId.photos[0]} alt="Car" className="w-full h-full object-cover"/>}
+              <div className="flex items-center gap-4 flex-1 w-full">
+                <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                   {booking.carId?.photos?.[0] ? (
+                     <img src={booking.carId.photos[0]} alt="Car" className="w-full h-full object-cover"/>
+                   ) : (
+                     <div className="flex items-center justify-center h-full text-xs text-gray-400">No Image</div>
+                   )}
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">{booking.carId?.make} {booking.carId?.model}</h3>
-                  <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
-                    <span className="flex items-center gap-1"><Calendar className="w-4 h-4"/> {new Date(booking.startDateTime).toLocaleDateString()}</span>
-                    <span className="flex items-center gap-1"><Clock className="w-4 h-4"/> {booking.durationHours} Hours</span>
+                  <h3 className="font-bold text-lg text-gray-900">{booking.carId?.make || 'Unknown'} {booking.carId?.model}</h3>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-500 mt-1">
+                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3"/> {new Date(booking.startDateTime).toLocaleDateString()}</span>
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3"/> {booking.durationHours} Hours</span>
                   </div>
                 </div>
               </div>
 
               {/* Status & Price */}
-              <div className="text-right">
+              <div className="text-left md:text-right w-full md:w-auto">
                 <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${getStatusColor(booking.status)}`}>
                   {booking.status}
                 </span>
                 <p className="text-2xl font-bold text-indigo-600 mt-2">PKR {booking.totalPrice}</p>
-                <p className="text-xs text-gray-400">Payment: {booking.paymentStatus}</p>
+                <div className="flex items-center md:justify-end gap-1 text-xs text-gray-500 mt-1">
+                   {booking.paymentStatus === 'unpaid' && <AlertCircle className="w-3 h-3 text-orange-500" />}
+                   Payment: <span className={`font-medium ${booking.paymentStatus === 'paid' ? 'text-green-600' : 'text-orange-500'}`}>{booking.paymentStatus}</span>
+                </div>
               </div>
 
               {/* Actions */}
-              <div>
+              <div className="flex gap-3 w-full md:w-auto">
                 {booking.paymentStatus === 'pending' && booking.status !== 'cancelled' && (
                   <button 
                     onClick={() => handlePay(booking._id)}
-                    className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition"
+                    className="flex-1 bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition shadow-sm"
                   >
                     Pay Now
                   </button>
                 )}
-                {booking.status === 'confirmed' && (
-                  <button className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 transition ml-2">
-                    Download Invoice
+                {/* Invoice Button - Visible if paid/confirmed */}
+                {booking.paymentStatus === 'paid' && (
+                  <button 
+                    onClick={() => handleDownloadInvoice(booking._id)}
+                    className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition border border-gray-200"
+                    title="Download Invoice"
+                  >
+                    <FileText className="w-4 h-4" /> Invoice
                   </button>
                 )}
               </div>

@@ -34,7 +34,18 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await authService.login({ email, password });
-      const { token, user } = response.data;
+      console.log(response.data)
+      const { token, user } = response?.data?.data || {};
+      console.log("Login successful:", response);
+      
+
+      console.log("Tokens:", token);
+      console.log("User:", user);
+      
+      if (!token || !user) {
+        throw new Error('Invalid login response');
+      }
+
       
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
@@ -42,6 +53,7 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       return { success: true, role: user.role };
     } catch (error) {
+      console.error("Login failed", error);
       return { success: false, message: error.response?.data?.message || 'Login failed' };
     }
   };
