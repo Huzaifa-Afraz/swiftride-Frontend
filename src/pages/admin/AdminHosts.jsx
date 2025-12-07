@@ -9,8 +9,11 @@ const AdminHosts = () => {
   const fetchHosts = async () => {
     try {
       const res = await adminService.getUsers('host', {});
-      // --- CRITICAL SAFETY CHECK ---
-      const dataList = res.data.docs || res.data?.data || [];
+      
+      // --- FIX: DRILL DOWN TO 'res.data.data' ---
+      const apiData = res.data?.data || {}; 
+      const dataList = apiData.docs || apiData.users || [];
+      
       setHosts(Array.isArray(dataList) ? dataList : []);
     } catch (error) { 
       console.error(error); 

@@ -4,7 +4,6 @@ import { Search, User, CheckCircle, AlertCircle } from 'lucide-react';
 import { showAlert } from '../../utils/alert';
 
 const AdminUsers = () => {
-  // Always initialize as empty array
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,16 +13,14 @@ const AdminUsers = () => {
     try {
       const res = await adminService.getUsers('customer', { q: searchTerm });
       
-      // --- CRITICAL SAFETY CHECK ---
-      // Support { data: [...] } OR { data: { docs: [...] } } structure
-      const dataList = res.data.docs || res.data?.data || [];
+      // --- FIX: DRILL DOWN TO 'res.data.data' ---
+      // 1. res.data = Axios body
+      // 2. res.data.data = Your API's payload
+      // 3. .docs = The pagination array
+      const apiData = res.data?.data?.users || {}; 
+      const dataList = apiData.docs || apiData || [];
       
-      if (Array.isArray(dataList)) {
-        setUsers(dataList);
-      } else {
-        console.error("API returned non-array for users:", res.data);
-        setUsers([]);
-      }
+      setUsers(Array.isArray(dataList) ? dataList : []);
     } catch (error) {
       console.error(error);
       setUsers([]);
@@ -33,7 +30,6 @@ const AdminUsers = () => {
   };
 
   useEffect(() => {
-    // Debounce search slightly to avoid too many API calls
     const delayDebounceFn = setTimeout(() => {
       fetchUsers();
     }, 500);
@@ -78,7 +74,6 @@ const AdminUsers = () => {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {/* Safe Map Execution */}
             {users.length > 0 ? users.map(user => (
               <tr key={user._id} className="hover:bg-gray-50">
                 <td className="p-4 flex items-center gap-3">

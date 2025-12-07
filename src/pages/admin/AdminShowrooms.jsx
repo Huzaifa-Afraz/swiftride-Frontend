@@ -9,8 +9,10 @@ const AdminShowrooms = () => {
   useEffect(() => {
     adminService.getUsers('showroom', {})
       .then(res => {
-        // --- CRITICAL SAFETY CHECK ---
-        const dataList = res.data.docs || res.data?.data || [];
+        // --- FIX: DRILL DOWN TO 'res.data.data' ---
+        const apiData = res.data?.data || {}; 
+        const dataList = apiData.docs || apiData || [];
+        
         setShowrooms(Array.isArray(dataList) ? dataList : []);
         setLoading(false);
       })
@@ -46,7 +48,7 @@ const AdminShowrooms = () => {
             
             <div className="space-y-2 text-sm text-gray-600">
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" /> Islamabad
+                <MapPin className="w-4 h-4" /> {room.locationAddress || 'Islamabad'}
               </div>
               <div>Email: {room.email}</div>
               <div className="flex justify-between items-center pt-2 border-t mt-2">
