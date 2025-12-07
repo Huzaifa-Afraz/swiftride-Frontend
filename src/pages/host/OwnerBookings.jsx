@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { bookingService } from '../../services/bookingService';
 import { showAlert } from '../../utils/alert';
-import { Check, X, Clock, User } from 'lucide-react';
+import { Check, X, Clock, User, Calendar } from 'lucide-react';
 
 const OwnerBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -10,10 +10,16 @@ const OwnerBookings = () => {
   const fetchBookings = () => {
     bookingService.getOwnerBookings()
       .then(res => {
-        setBookings(res.data.docs || res.data);
+        // SAFETY FIX: Ensure 'data' is always an array
+        const data = res.data.docs || res.data || [];
+        setBookings(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error("Failed to load owner bookings", err);
+        setBookings([]);
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -24,7 +30,7 @@ const OwnerBookings = () => {
     try {
       await bookingService.updateStatus(id, status, `Marked as ${status} by host`);
       showAlert('Updated', `Booking ${status} successfully`, 'success');
-      fetchBookings(); // Refresh list
+      fetchBookings(); 
     } catch (error) {
       showAlert('Error', error.response?.data?.message || 'Update failed', 'error');
     }
@@ -37,18 +43,22 @@ const OwnerBookings = () => {
       <h1 className="text-3xl font-bold mb-8">Booking Requests</h1>
 
       <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-        {bookings.map((booking, index) => (
+        {bookings.length > 0 ? bookings.map((booking, index) => (
           <div key={booking._id} className={`p-6 flex flex-col md:flex-row gap-6 ${index !== bookings.length - 1 ? 'border-b' : ''}`}>
             
             {/* Car Image */}
             <div className="w-full md:w-32 h-24 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-               {booking.carId?.photos?.[0] && <img src={booking.carId.photos[0]} alt="Car" className="w-full h-full object-cover"/>}
+               {booking.carId?.photos?.[0] ? (
+                 <img src={booking.carId.photos[0]} alt="Car" className="w-full h-full object-cover"/>
+               ) : (
+                 <div className="flex items-center justify-center h-full text-xs text-gray-400">No Image</div>
+               )}
             </div>
 
             {/* Details */}
             <div className="flex-grow">
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-lg">{booking.carId?.make} {booking.carId?.model}</h3>
+                <h3 className="font-bold text-lg">{booking.carId?.make || 'Deleted Car'} {booking.carId?.model}</h3>
                 <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
                   booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
                   booking.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-800'
@@ -58,8 +68,11 @@ const OwnerBookings = () => {
               </div>
               
               <div className="flex flex-col gap-1 text-sm text-gray-600 mb-3">
-                <div className="flex items-center gap-2"><User className="w-4 h-4"/> Customer: {booking.customerId?.fullName}</div>
-                <div className="flex items-center gap-2"><Clock className="w-4 h-4"/> {new Date(booking.startDateTime).toLocaleString()} — {new Date(booking.endDateTime).toLocaleString()}</div>
+                <div className="flex items-center gap-2"><User className="w-4 h-4"/> Customer: {booking.customerId?.fullName || 'Unknown User'}</div>
+                <div className="flex items-center gap-2"><Clock className="w-4 h-4"/> 
+                  {booking.startDateTime ? new Date(booking.startDateTime).toLocaleDateString() : 'N/A'} — 
+                  {booking.endDateTime ? new Date(booking.endDateTime).toLocaleDateString() : 'N/A'}
+                </div>
               </div>
 
               <div className="font-bold text-indigo-600">Earnings: PKR {booking.totalPrice}</div>
@@ -85,8 +98,12 @@ const OwnerBookings = () => {
               )}
             </div>
           </div>
-        ))}
-        {bookings.length === 0 && <div className="p-10 text-center text-gray-500">No booking requests found.</div>}
+        )) : (
+          <div className="p-10 text-center text-gray-500 flex flex-col items-center">
+            <Calendar className="w-12 h-12 text-gray-300 mb-4" />
+            <p>No booking requests found.</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { carService } from '../../services/carService';
-import { Plus, MapPin, Fuel, Settings } from 'lucide-react';
+import { Plus, MapPin, Fuel, Settings, AlertCircle } from 'lucide-react';
 
 const MyCars = () => {
   const [cars, setCars] = useState([]);
@@ -10,10 +10,16 @@ const MyCars = () => {
   useEffect(() => {
     carService.getMyCars()
       .then(res => {
-        setCars(res.data.docs || res.data);
+        // SAFETY FIX: Ensure 'data' is always an array
+        const data = res.data.docs || res.data || [];
+        setCars(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error("Failed to load cars", err);
+        setCars([]); // Fallback to empty array
+        setLoading(false);
+      });
   }, []);
 
   if (loading) return <div className="p-10 text-center">Loading your fleet...</div>;
@@ -29,6 +35,7 @@ const MyCars = () => {
 
       {cars.length === 0 ? (
         <div className="text-center py-20 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+          <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500 mb-4">You haven't listed any cars yet.</p>
           <Link to="/host/add-car" className="text-indigo-600 font-bold hover:underline">List your first car</Link>
         </div>
@@ -37,7 +44,11 @@ const MyCars = () => {
           {cars.map(car => (
             <div key={car._id} className="bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
               <div className="h-48 bg-gray-200 relative">
-                {car.photos?.[0] && <img src={car.photos[0]} alt={car.make} className="w-full h-full object-cover"/>}
+                {car.photos?.[0] ? (
+                  <img src={car.photos[0]} alt={car.make} className="w-full h-full object-cover"/>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
+                )}
                 <div className={`absolute top-3 right-3 px-2 py-1 rounded text-xs font-bold ${car.availabilityIsAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                   {car.availabilityIsAvailable ? 'Active' : 'Inactive'}
                 </div>

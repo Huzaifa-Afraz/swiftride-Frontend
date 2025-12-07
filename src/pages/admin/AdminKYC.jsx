@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import apiClient from '../../services/apiClient'; // Or import kycService if you prefer
-import { Check, X, FileText } from 'lucide-react';
+import apiClient from '../../services/apiClient';
+import { Check, X, FileText, AlertCircle } from 'lucide-react';
 import { showAlert } from '../../utils/alert';
 
 const AdminKYC = () => {
+  // 1. Initialize as empty array [] (Critical fix)
   const [kycList, setKycList] = useState([]);
   const [filter, setFilter] = useState('pending');
   const [loading, setLoading] = useState(true);
@@ -14,10 +15,18 @@ const AdminKYC = () => {
       const res = await apiClient.get('/admin/kyc', {
         params: { status: filter, page: 1, limit: 20 }
       });
-      // Handle both pagination format ({ docs: [] }) and simple array format ([])
-      setKycList(res.data.docs || res.data || []); 
+      
+      console.log("KYC Data:", res.data); // Debugging
+
+      // 2. SAFETY CHECK: Extract array correctly
+      const data = res.data.docs || res.data || [];
+      
+      // 3. FORCE ARRAY: If it's not an array, force it to be one
+      setKycList(Array.isArray(data) ? data : []); 
+      
     } catch (error) {
       console.error("Failed to fetch KYC", error);
+      setKycList([]); // Fallback to empty array on error
     } finally {
       setLoading(false);
     }
@@ -34,7 +43,7 @@ const AdminKYC = () => {
     try {
       await apiClient.patch(`/admin/kyc/${id}/${endpoint}`, body);
       showAlert('Success', `KYC ${decision}d successfully`, 'success');
-      fetchKyc(); // Refresh list
+      fetchKyc(); 
     } catch (error) {
       showAlert('Error', 'Action failed', 'error');
     }
@@ -47,7 +56,7 @@ const AdminKYC = () => {
         <select 
           value={filter} 
           onChange={(e) => setFilter(e.target.value)} 
-          className="border p-2 rounded-lg bg-white shadow-sm"
+          className="border p-2 rounded-lg bg-white shadow-sm outline-none focus:ring-2 ring-indigo-500"
         >
           <option value="pending">Pending</option>
           <option value="approved">Approved</option>
@@ -56,7 +65,7 @@ const AdminKYC = () => {
       </div>
 
       {loading ? (
-        <div className="text-center p-10">Loading...</div>
+        <div className="text-center p-10 text-gray-500">Loading requests...</div>
       ) : (
         <div className="bg-white shadow-sm border rounded-xl overflow-hidden">
           <table className="min-w-full text-left">
@@ -69,7 +78,8 @@ const AdminKYC = () => {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {kycList.map((item) => (
+              {/* 4. RENDER CHECK: Ensure kycList has items */}
+              {kycList.length > 0 ? kycList.map((item) => (
                 <tr key={item._id} className="hover:bg-gray-50">
                   <td className="p-4">
                     <div className="font-medium text-gray-900">{item.userId?.fullName || 'Unknown User'}</div>
@@ -82,8 +92,7 @@ const AdminKYC = () => {
                   </td>
                   <td className="p-4">
                     <div className="flex flex-wrap gap-2">
-                      {/* Dynamically render links for whatever documents exist */}
-                      {Object.entries(item.documents || {}).map(([key, url]) => (
+                      {item.documents && Object.entries(item.documents).map(([key, url]) => (
                         <a 
                           key={key} 
                           href={url} 
@@ -123,10 +132,14 @@ const AdminKYC = () => {
                     )}
                   </td>
                 </tr>
-              ))}
-              {kycList.length === 0 && (
+              )) : (
                 <tr>
-                  <td colSpan="4" className="p-8 text-center text-gray-500">No {filter} requests found.</td>
+                  <td colSpan="4" className="p-10 text-center text-gray-500">
+                    <div className="flex flex-col items-center gap-2">
+                      <AlertCircle className="w-8 h-8 text-gray-300" />
+                      <p>No {filter} KYC requests found.</p>
+                    </div>
+                  </td>
                 </tr>
               )}
             </tbody>

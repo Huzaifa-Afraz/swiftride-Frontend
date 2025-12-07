@@ -14,11 +14,18 @@ const Wallet = () => {
           walletService.getMyWallet(),
           walletService.getTransactions()
         ]);
+        
         setWallet(walletRes.data);
-        setTransactions(txRes.data.docs || txRes.data); // Handle pagination structure
+        
+        // SAFETY FIX: Ensure transactions is always an array
+        const txData = txRes.data.docs || txRes.data || [];
+        setTransactions(Array.isArray(txData) ? txData : []);
+        
         setLoading(false);
       } catch (error) {
         console.error("Wallet load error", error);
+        // Fallback safety
+        setTransactions([]);
         setLoading(false);
       }
     };
@@ -31,7 +38,6 @@ const Wallet = () => {
     <div className="max-w-6xl mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold mb-8">My Wallet</h1>
 
-      {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <div className="bg-indigo-600 text-white p-6 rounded-2xl shadow-lg">
           <div className="flex items-center gap-3 mb-2 opacity-80">
@@ -50,7 +56,6 @@ const Wallet = () => {
         </div>
       </div>
 
-      {/* Transactions Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
           <h2 className="font-bold text-gray-700">Recent Transactions</h2>
@@ -67,7 +72,7 @@ const Wallet = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {transactions.map((tx) => (
+              {transactions.length > 0 ? transactions.map((tx) => (
                 <tr key={tx._id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {new Date(tx.createdAt).toLocaleDateString()}
@@ -81,7 +86,7 @@ const Wallet = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-700">
-                    {tx.description || `Booking Payment #${tx.referenceId?.substring(0,8)}`}
+                    {tx.description || (tx.referenceId ? `Ref: ${tx.referenceId.substring(0,8)}` : 'Transaction')}
                   </td>
                   <td className={`px-6 py-4 text-right font-bold ${tx.type === 'payout' ? 'text-red-500' : 'text-green-600'}`}>
                     {tx.type === 'payout' ? '-' : '+'} PKR {tx.amount}
@@ -92,8 +97,7 @@ const Wallet = () => {
                     </span>
                   </td>
                 </tr>
-              ))}
-              {transactions.length === 0 && (
+              )) : (
                 <tr>
                   <td colSpan="5" className="px-6 py-10 text-center text-gray-500">No transactions found.</td>
                 </tr>

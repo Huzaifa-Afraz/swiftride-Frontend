@@ -58,11 +58,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    window.location.href = '/login';
+  // const logout = () => {
+  //   localStorage.removeItem('token');
+  //   localStorage.removeItem('user');
+  //   setUser(null);
+  //   window.location.href = '/login';
+  // };
+  const logout = async () => {
+    try {
+      // 1. Call the backend to invalidate session/token
+      await authService.logout();
+    } catch (error) {
+      console.error("Logout API call failed", error);
+      // We ignore the error and proceed to clear local state anyway
+    } finally {
+      // 2. Always clear local storage and state
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+      window.location.href = '/login';
+    }
   };
 
   return (
