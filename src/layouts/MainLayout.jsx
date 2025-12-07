@@ -1,42 +1,43 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import Footer from '../components/layout/Footer';
 import { LogOut, Car, Menu, X, User } from 'lucide-react';
-import Swal from 'sweetalert2'; // Import SweetAlert2
+import Swal from 'sweetalert2';
 
 const MainLayout = () => {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
 
   // Close mobile menu when route changes
   React.useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location]);
 
-  // --- NEW: LOGOUT CONFIRMATION HANDLER ---
+  // Logout Confirmation Handler
   const handleLogout = () => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: "You will be logged out of your session.",
+      title: 'Sign Out?',
+      text: "Are you sure you want to log out?",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#d33', // Red for logout
-      cancelButtonColor: '#3085d6', // Blue for cancel
-      confirmButtonText: 'Yes, Log Out'
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, Sign Out'
     }).then((result) => {
       if (result.isConfirmed) {
-        logout(); // Only calls logout if user clicks "Yes"
+        logout();
       }
     });
   };
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-gray-800 bg-gray-50">
+      {/* Sticky Navbar */}
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+          {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <div className="bg-indigo-600 p-2 rounded-lg">
               <Car className="text-white w-6 h-6" />
@@ -46,11 +47,12 @@ const MainLayout = () => {
             </span>
           </Link>
 
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-            {/* Pass handleLogout instead of direct logout */}
-            <NavLinks user={user} onLogoutClick={handleLogout} /> 
+            <NavLinks user={user} onLogoutClick={handleLogout} />
           </div>
           
+          {/* Mobile Menu Toggle */}
           <button 
             className="md:hidden text-gray-600 p-2"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -59,16 +61,17 @@ const MainLayout = () => {
           </button>
         </div>
 
+        {/* Mobile Navigation Dropdown */}
         {isMobileMenuOpen && (
           <div className="md:hidden bg-white border-t border-gray-100 absolute w-full shadow-xl">
             <div className="flex flex-col p-6 space-y-4 font-medium text-gray-600">
-               {/* Pass handleLogout here too */}
               <NavLinks user={user} onLogoutClick={handleLogout} isMobile={true} />
             </div>
           </div>
         )}
       </nav>
 
+      {/* Dynamic Page Content */}
       <main className="flex-grow">
         <Outlet />
       </main>
@@ -78,7 +81,7 @@ const MainLayout = () => {
   );
 };
 
-// Helper Component Updated to accept onLogoutClick
+// --- SIMPLIFIED NAVLINKS COMPONENT ---
 const NavLinks = ({ user, onLogoutClick, isMobile }) => {
   const linkClass = isMobile 
     ? "block py-2 border-b border-gray-50 hover:text-indigo-600" 
@@ -90,68 +93,45 @@ const NavLinks = ({ user, onLogoutClick, isMobile }) => {
 
   return (
     <>
+      {/* 1. PUBLIC LINKS (Always visible) */}
       <Link to="/search" className={linkClass}>Browse Cars</Link>
-      <Link to="/about" className={linkClass}>About Us</Link>
-      <Link to="/contact" className={linkClass}>Contact</Link>
-    
-
+      <Link to="/how-it-works" className={linkClass}>How it Works</Link>
+      
+      {/* 2. AUTHENTICATION LOGIC */}
       {!user ? (
+        // STATE A: NOT LOGGED IN
         <div className={isMobile ? "flex flex-col gap-2 mt-4" : "flex items-center gap-4"}>
           <Link to="/login" className={isMobile ? "text-center py-2" : "text-gray-600 hover:text-indigo-600 px-4 py-2"}>Login</Link>
           <Link to="/signup" className={btnClass}>Sign Up</Link>
         </div>
       ) : (
-        <>
-          {/* CUSTOMER LINKS */}
-          {user.role === 'customer' && (
-             <Link to="/my-bookings" className={linkClass}>My Bookings</Link>
-          )}
+        // STATE B: LOGGED IN (Show Dashboard Button + Logout)
+        <div className={`flex items-center gap-4 ${isMobile ? 'flex-col mt-4' : ''}`}>
           
-          {/* HOST / SHOWROOM LINKS */}
-          {(user.role === 'host' || user.role === 'showroom') && (
-            <>
-              <Link to="/host/cars" className={linkClass}>My Cars</Link>
-              <Link to="/host/bookings" className={linkClass}>Requests</Link>
-              <Link to="/wallet" className={linkClass}>Wallet</Link>
-            </>
+          {/* THE DASHBOARD BUTTON */}
+          <Link 
+            to={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} 
+            className={`${btnClass} font-bold`}
+          >
+            Go to Dashboard
+          </Link>
+
+          {/* User Icon (Desktop Only) */}
+          {!isMobile && (
+            <div className="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 font-bold ml-2">
+              {user.fullName?.charAt(0).toUpperCase() || <User className="w-5 h-5"/>}
+            </div>
           )}
 
-          {/* ADMIN LINK (Exclusive) */}
-          {user.role === 'admin' && (
-            <Link to="/admin/dashboard" className={linkClass + " text-indigo-600 font-bold"}>
-              Go to Admin Panel
-            </Link>
-          )}
-          
-          <div className={isMobile ? "border-t pt-4 mt-2" : "h-8 w-px bg-gray-200"}></div>
-          
-          <div className={`flex items-center gap-3 ${isMobile ? 'justify-between' : ''}`}>
-            {/* ONLY SHOW PROFILE LINK IF NOT ADMIN */}
-            {user.role !== 'admin' ? (
-              <Link to="/profile" className="flex items-center gap-2 hover:bg-gray-100 p-1.5 rounded-lg transition">
-                <div className="w-8 h-8 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600">
-                  <User className="w-4 h-4" />
-                </div>
-                <div className="flex flex-col">
-                   <span className="text-gray-900 font-semibold text-sm leading-tight">{user.fullName || user.showroomName || 'User'}</span>
-                   <span className="text-xs text-gray-500 leading-tight">View Profile</span>
-                </div>
-              </Link>
-            ) : (
-              // Simple User Badge for Admin (No Link)
-              <div className="flex items-center gap-2 p-1.5">
-                <div className="w-8 h-8 bg-red-50 rounded-full flex items-center justify-center text-red-600">
-                  <User className="w-4 h-4" />
-                </div>
-                <span className="text-gray-900 font-semibold text-sm">Administrator</span>
-              </div>
-            )}
-            
-            <button onClick={onLogoutClick} className="text-gray-400 hover:text-red-500 transition flex items-center gap-1">
-              <LogOut className="w-5 h-5" /> {isMobile && "Logout"}
-            </button>
-          </div>
-        </>
+          {/* Logout Button */}
+          <button 
+            onClick={onLogoutClick} 
+            className={`text-gray-400 hover:text-red-500 transition flex items-center gap-1 ${isMobile ? 'w-full justify-center py-2' : ''}`}
+            title="Logout"
+          >
+            <LogOut className="w-6 h-6" /> {isMobile && "Sign Out"}
+          </button>
+        </div>
       )}
     </>
   );
