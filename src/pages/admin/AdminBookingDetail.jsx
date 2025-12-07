@@ -11,7 +11,7 @@ const AdminBookingDetail = () => {
   useEffect(() => {
     apiClient.get(`/admin/bookings/${id}`)
       .then(res => {
-        setBooking(res.data);
+        setBooking(res.data?.data || null);
         setLoading(false);
       })
       .catch(err => console.error(err));

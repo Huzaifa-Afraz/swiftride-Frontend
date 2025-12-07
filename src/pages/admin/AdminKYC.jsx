@@ -19,7 +19,7 @@ const AdminKYC = () => {
       console.log("KYC Data:", res.data); // Debugging
 
       // 2. SAFETY CHECK: Extract array correctly
-      const data = res.data.docs || res.data || [];
+      const data = res.data.docs || res.data?.data || [];
       
       // 3. FORCE ARRAY: If it's not an array, force it to be one
       setKycList(Array.isArray(data) ? data : []); 

@@ -24,7 +24,7 @@ const AdminBookings = () => {
         console.log("Admin Bookings Data:", res.data); // Debugging
 
         // 2. SAFETY CHECK
-        const data = res.data.docs || res.data || [];
+        const data = res.data.docs || res.data?.data || [];
         
         // 3. FORCE ARRAY
         setBookings(Array.isArray(data) ? data : []);

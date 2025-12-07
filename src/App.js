@@ -30,6 +30,9 @@ import Wallet from './pages/host/Wallet';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminKYC from './pages/admin/AdminKYC';
 import AdminBookingDetail from './pages/admin/AdminBookingDetail';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminHosts from './pages/admin/AdminHosts';
+import AdminShowrooms from './pages/admin/AdminShowrooms';
 
 // --- Common Pages ---
 import KYCSubmit from './pages/common/KYCSubmit';
@@ -53,7 +56,7 @@ function App() {
         <Routes>
           {/* Main Layout wraps standard pages */}
           <Route element={<MainLayout />}>
-            
+
             {/* PUBLIC ROUTES */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -74,11 +77,11 @@ function App() {
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
-            
+
             {/* COMMON PROTECTED ROUTES */}
             <Route element={<ProtectedRoute allowedRoles={['customer', 'host', 'showroom', 'admin']} />}>
-               <Route path="/kyc/submit" element={<KYCSubmit />} />
-               <Route path="/profile" element={<UserProfile />} />
+              <Route path="/kyc/submit" element={<KYCSubmit />} />
+              <Route path="/profile" element={<UserProfile />} />
             </Route>
 
             {/* CUSTOMER ROUTES */}
@@ -88,7 +91,7 @@ function App() {
             </Route>
 
             {/* HOST & SHOWROOM ROUTES */}
-            <Route element={<ProtectedRoute allowedRoles={['host', 'showroom', ]} />}>
+            <Route element={<ProtectedRoute allowedRoles={['host', 'showroom',]} />}>
               <Route path="/host/cars" element={<MyCars />} />
               <Route path="/host/add-car" element={<AddCar />} />
               <Route path="/host/bookings" element={<OwnerBookings />} />
@@ -104,15 +107,18 @@ function App() {
              <Route path="bookings/:id" element={<AdminBookingDetail />} />
           </Route> */}
           {/* ADMIN ROUTES - Uses separate AdminLayout */}
-<Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-  <Route element={<AdminLayout />}>  {/* Nest inside AdminLayout */}
-     <Route path="/admin/dashboard" element={<AdminDashboard />} />
-     <Route path="/admin/kyc" element={<AdminKYC />} />
-     <Route path="/admin/bookings" element={<AdminBookings />} />
-     <Route path="/admin/bookings/:id" element={<AdminBookingDetail />} />
-  </Route>
-</Route>
-          
+          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+            <Route element={<AdminLayout />}>  {/* Nest inside AdminLayout */}
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/kyc" element={<AdminKYC />} />
+              <Route path="/admin/bookings" element={<AdminBookings />} />
+              <Route path="/admin/bookings/:id" element={<AdminBookingDetail />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/hosts" element={<AdminHosts />} />
+              <Route path="/admin/showrooms" element={<AdminShowrooms />} />
+            </Route>
+          </Route>
+
           {/* Catch-all Redirect */}
           <Route path="*" element={<NotFound />} />
         </Routes>

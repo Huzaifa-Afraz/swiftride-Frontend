@@ -1,12 +1,13 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
-import { LayoutDashboard, Users, Car, FileText, LogOut, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, Car, FileText, LogOut, Shield, Building2 } from 'lucide-react'; // Added Building2
 import Swal from 'sweetalert2';
 
 const AdminLayout = () => {
   const { logout } = useAuth();
   const location = useLocation();
+
   const handleLogout = () => {
     Swal.fire({
       title: 'Admin Logout',
@@ -41,19 +42,30 @@ const AdminLayout = () => {
             <LayoutDashboard className="w-5 h-5" /> Dashboard
           </Link>
           <Link to="/admin/kyc" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('kyc')}`}>
-            <Users className="w-5 h-5" /> KYC Requests
+            <FileText className="w-5 h-5" /> KYC Requests
           </Link>
           <Link to="/admin/bookings" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('bookings')}`}>
-            <FileText className="w-5 h-5" /> All Bookings
+            <Car className="w-5 h-5" /> All Bookings
           </Link>
-          {/* Placeholder for future car management */}
-          <div className="flex items-center gap-3 px-4 py-3 text-indigo-400 cursor-not-allowed opacity-50">
-            <Car className="w-5 h-5" /> Car Management
-          </div>
+          
+          <div className="pt-4 pb-2 text-xs font-bold text-indigo-400 uppercase px-4">User Management</div>
+          
+          <Link to="/admin/users" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('users')}`}>
+            <Users className="w-5 h-5" /> Customers
+          </Link>
+          <Link to="/admin/hosts" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('hosts')}`}>
+            <Car className="w-5 h-5" /> Hosts
+          </Link>
+          <Link to="/admin/showrooms" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('showrooms')}`}>
+            <Building2 className="w-5 h-5" /> Showrooms
+          </Link>
         </nav>
 
         <div className="p-6 border-t border-indigo-800">
-          <button onClick={handleLogout} className="flex items-center gap-2 text-indigo-300 hover:text-white transition">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-indigo-300 hover:text-white transition w-full"
+          >
             <LogOut className="w-5 h-5" /> Logout
           </button>
         </div>
