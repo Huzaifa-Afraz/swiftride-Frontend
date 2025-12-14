@@ -28,7 +28,8 @@ const BrowseCars = () => {
       params.limit = filters.limit;
 
       const res = await carService.getCars(params);
-      const data = res.data.docs || res.data || [];
+      const data = res.data.docs || res.data.data || [];
+      console.log("Fetched cars:", data);
       setCars(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Search error", error);

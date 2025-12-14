@@ -7,72 +7,76 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
+  const updateUser = (userData) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+  };
 
-    // Check if data exists AND is not the string "undefined"
-    if (storedUser && token && storedUser !== 'undefined') {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-      } catch (error) {
-        // If parsing fails, clear the corrupt data
-        console.error("Corrupt auth data found, clearing...", error);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        setUser(null);
+  useEffect(() => {
+    const initAuth = async () => {
+      const storedUser = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+
+      if (token && storedUser && storedUser !== 'undefined') {
+        try {
+          // 1. Always load LocalStorage data FIRST so app works immediately
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+
+          // 2. Try to fetch fresh data, but DON'T crash if it fails
+          try {
+            const res = await authService.getCurrentUser();
+            if (res.data) {
+               // Support both structure formats
+               const freshUser = res.data.data || res.data?.user;
+               updateUser(freshUser); 
+            }
+          } catch (apiError) {
+            console.warn("Background refresh failed (API might be missing), using local data.");
+            // Only logout if it's strictly an AUTH error (401)
+            if (apiError.response?.status === 401) {
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+              setUser(null);
+            }
+          }
+        } catch (parseError) {
+          console.error("Corrupt local data", parseError);
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+          setUser(null);
+        }
+      } else {
+        setLoading(false);
       }
-    } else {
-      // Clean up if data is incomplete or invalid
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   const login = async (email, password) => {
     try {
       const response = await authService.login({ email, password });
-      console.log(response.data)
-      const { token, user } = response?.data?.data || {};
-      console.log("Login successful:", response);
-      
-
-      console.log("Tokens:", token);
-      console.log("User:", user);
-      
-      if (!token || !user) {
-        throw new Error('Invalid login response');
-      }
-
+      // Support both {data: {token, user}} and {token, user}
+      const data = response.data.data || response.data;
+      const { token, user } = data;
       
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      updateUser(user);
       
-      setUser(user);
       return { success: true, role: user.role };
     } catch (error) {
-      console.error("Login failed", error);
       return { success: false, message: error.response?.data?.message || 'Login failed' };
     }
   };
 
-  // const logout = () => {
-  //   localStorage.removeItem('token');
-  //   localStorage.removeItem('user');
-  //   setUser(null);
-  //   window.location.href = '/login';
-  // };
   const logout = async () => {
     try {
-      // 1. Call the backend to invalidate session/token
       await authService.logout();
     } catch (error) {
-      console.error("Logout API call failed", error);
-      // We ignore the error and proceed to clear local state anyway
+      console.error("Logout error", error);
     } finally {
-      // 2. Always clear local storage and state
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setUser(null);
@@ -81,7 +85,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, loading, updateUser }}>
       {!loading && children}
     </AuthContext.Provider>
   );

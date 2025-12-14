@@ -1,13 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../../services/apiClient';
-import { Check, X, FileText, AlertCircle } from 'lucide-react';
+import { Check, X, FileText, AlertCircle, Eye, XCircle } from 'lucide-react';
 import { showAlert } from '../../utils/alert';
 
+// --- HELPER: Convert Windows Path to Server URL ---
+const getDocUrl = (path) => {
+  if (!path) return null;
+  // If already http, return as is
+  if (path.startsWith('http')) return path;
+
+  // Split at 'uploads' to remove the local D:\ stuff
+  // Input: "D:\\finalyearproject\\new\\backend\\uploads\\kyc\\image.png"
+  // Output: "/kyc/image.png"
+  const parts = path.split('uploads');
+  const relativePath = parts.length > 1 ? parts[1] : path;
+
+  // Replace Windows backslashes with web forward slashes
+  const cleanPath = relativePath.replace(/\\/g, '/');
+
+  // Prepend your backend URL (Adjust port if needed)
+  const baseUrl = 'http://localhost:5000/uploads'; 
+  return `${baseUrl}${cleanPath}`;
+};
+
 const AdminKYC = () => {
-  // 1. Initialize as empty array [] (Critical fix)
   const [kycList, setKycList] = useState([]);
   const [filter, setFilter] = useState('pending');
   const [loading, setLoading] = useState(true);
+  
+  // --- MODAL STATE ---
+  const [selectedImage, setSelectedImage] = useState(null); // URL to show
+  const [selectedTitle, setSelectedTitle] = useState('');   // Title for modal
 
   const fetchKyc = async () => {
     setLoading(true);
@@ -16,17 +39,13 @@ const AdminKYC = () => {
         params: { status: filter, page: 1, limit: 20 }
       });
       
-      console.log("KYC Data:", res.data); // Debugging
-
-      // 2. SAFETY CHECK: Extract array correctly
-      const data = res.data.docs || res.data?.data || [];
-      
-      // 3. FORCE ARRAY: If it's not an array, force it to be one
+      // Safety check for data structure
+      const data = res.data.docs || res.data?.data?.data || res.data || [];
       setKycList(Array.isArray(data) ? data : []); 
       
     } catch (error) {
       console.error("Failed to fetch KYC", error);
-      setKycList([]); // Fallback to empty array on error
+      setKycList([]); 
     } finally {
       setLoading(false);
     }
@@ -49,8 +68,47 @@ const AdminKYC = () => {
     }
   };
 
+  // Open the modal
+  const openPreview = (path, title) => {
+    const url = getDocUrl(path);
+    if (url) {
+      setSelectedImage(url);
+      setSelectedTitle(title);
+    }
+  };
+
+  // Close the modal
+  const closePreview = () => {
+    setSelectedImage(null);
+    setSelectedTitle('');
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-6 py-10">
+    <div className="max-w-7xl mx-auto px-6 py-10 relative">
+      
+      {/* --- IMAGE MODAL POPUP --- */}
+      {selectedImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={closePreview}>
+          <div className="bg-white rounded-xl overflow-hidden max-w-4xl w-full max-h-[90vh] relative flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-lg">{selectedTitle}</h3>
+              <button onClick={closePreview} className="text-gray-500 hover:text-red-500 transition">
+                <XCircle className="w-8 h-8" />
+              </button>
+            </div>
+            <div className="p-4 bg-gray-900 flex items-center justify-center flex-grow overflow-auto">
+              <img 
+                src={selectedImage} 
+                alt="Document Preview" 
+                className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/400?text=Image+Not+Found"; }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- HEADER --- */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">KYC Management</h1>
         <select 
@@ -78,12 +136,11 @@ const AdminKYC = () => {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {/* 4. RENDER CHECK: Ensure kycList has items */}
               {kycList.length > 0 ? kycList.map((item) => (
                 <tr key={item._id} className="hover:bg-gray-50">
                   <td className="p-4">
-                    <div className="font-medium text-gray-900">{item.userId?.fullName || 'Unknown User'}</div>
-                    <div className="text-sm text-gray-500">{item.userId?.email}</div>
+                    <div className="font-medium text-gray-900">{item.user?.fullName || 'Unknown User'}</div>
+                    <div className="text-sm text-gray-500">{item.user?.email}</div>
                   </td>
                   <td className="p-4 capitalize">
                     <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">
@@ -92,18 +149,42 @@ const AdminKYC = () => {
                   </td>
                   <td className="p-4">
                     <div className="flex flex-wrap gap-2">
-                      {item.documents && Object.entries(item.documents).map(([key, url]) => (
-                        <a 
-                          key={key} 
-                          href={url} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="flex items-center gap-1 text-xs bg-gray-100 border px-2 py-1 rounded hover:bg-gray-200 transition"
+                      {/* Document Buttons - Trigger Modal */}
+                      {item.idFrontPath && (
+                        <button 
+                          onClick={() => openPreview(item.idFrontPath, 'ID Card Front')}
+                          className="flex items-center gap-1 text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition"
                         >
-                          <FileText className="w-3 h-3" />
-                          {key.replace('_', ' ')}
-                        </a>
-                      ))}
+                          <Eye className="w-3 h-3" /> ID Front
+                        </button>
+                      )}
+                      
+                      {item.idBackPath && (
+                        <button 
+                          onClick={() => openPreview(item.idBackPath, 'ID Card Back')}
+                          className="flex items-center gap-1 text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition"
+                        >
+                          <Eye className="w-3 h-3" /> ID Back
+                        </button>
+                      )}
+
+                      {item.liveSelfiePath && (
+                        <button 
+                          onClick={() => openPreview(item.liveSelfiePath, 'Live Selfie')}
+                          className="flex items-center gap-1 text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition"
+                        >
+                          <Eye className="w-3 h-3" /> Selfie
+                        </button>
+                      )}
+
+                      {item.drivingLicensePath && (
+                        <button 
+                          onClick={() => openPreview(item.drivingLicensePath, 'Driving License')}
+                          className="flex items-center gap-1 text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition"
+                        >
+                          <Eye className="w-3 h-3" /> License
+                        </button>
+                      )}
                     </div>
                   </td>
                   <td className="p-4 text-right">

@@ -19,7 +19,8 @@ const CustomerOverview = () => {
           <div className="relative z-10">
             <p className="text-indigo-100 text-sm font-medium mb-1">Account Status</p>
             <h3 className="text-2xl font-bold flex items-center gap-2">
-              {user.isVerified ? 'Verified' : 'Pending'} 
+              
+              {user.isVerified? 'Verified' : 'Pending'}
               {user.isVerified && <Shield className="w-5 h-5" />}
             </h3>
           </div>

@@ -6,4 +6,9 @@ export const bookingService = {
   getInvoice: (id) => apiClient.get(`/bookings/invoice/${id}`, { responseType: 'blob' }),
   getOwnerBookings: () => apiClient.get('/bookings/owner'),
   updateStatus: (id, status, note) => apiClient.patch(`/bookings/${id}/status`, { status, note }),
+    // Get booking by ID (used to confirm payment after return)
+  getBookingById: async (bookingId) => {
+    const res = await apiClient.get(`/bookings/${bookingId}`);
+    return res.data;
+  },
 };

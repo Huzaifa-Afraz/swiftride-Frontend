@@ -23,12 +23,13 @@ const CarDetails = () => {
   useEffect(() => {
     carService.getCarDetails(carId)
       .then(res => {
-        setCar(res.data);
+        console.log('Car Details:', res.data);
+        setCar(res.data?.data?.car);
         setLoading(false);
       })
       .catch(err => {
         showAlert('Error', 'Failed to load car details', 'error');
-        navigate('/');
+        // navigate('/');
       });
   }, [carId, navigate]);
 
@@ -99,7 +100,7 @@ const CarDetails = () => {
           
           <div className="flex items-center gap-2 text-gray-600 mb-6">
             <MapPin className="w-5 h-5 text-indigo-600" />
-            <span>{car.locationAddress}</span>
+            <span>{car.location?.address}</span>
           </div>
 
           <div className="flex items-end gap-2 mb-8 border-b pb-6">
@@ -135,7 +136,7 @@ const CarDetails = () => {
               <CheckCircle className="text-indigo-500" />
               <div>
                 <p className="text-xs text-gray-500 uppercase font-bold">Available</p>
-                <p className="font-medium text-green-600">{car.availabilityIsAvailable ? 'Yes' : 'No'}</p>
+                <p className="font-medium text-green-600">{car.availability?.isAvailable ? 'Yes' : 'No'}</p>
               </div>
             </div>
           </div>

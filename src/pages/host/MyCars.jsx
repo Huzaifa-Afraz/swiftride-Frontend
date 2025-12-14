@@ -11,7 +11,7 @@ const MyCars = () => {
     carService.getMyCars()
       .then(res => {
         // SAFETY FIX: Ensure 'data' is always an array
-        const data = res.data.docs || res.data || [];
+        const data = res.data.docs || res?.data?.data?.cars || [];
         setCars(Array.isArray(data) ? data : []);
         setLoading(false);
       })
@@ -50,7 +50,7 @@ const MyCars = () => {
                   <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
                 )}
                 <div className={`absolute top-3 right-3 px-2 py-1 rounded text-xs font-bold ${car.availabilityIsAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                  {car.availabilityIsAvailable ? 'Active' : 'Inactive'}
+                  {car.isActive ? 'Active' : 'Inactive'}
                 </div>
               </div>
               <div className="p-5">
@@ -60,7 +60,7 @@ const MyCars = () => {
                 <div className="grid grid-cols-2 gap-y-2 text-sm text-gray-600 mb-4">
                   <div className="flex items-center gap-2"><Fuel className="w-4 h-4"/> {car.fuelType}</div>
                   <div className="flex items-center gap-2"><Settings className="w-4 h-4"/> {car.transmission}</div>
-                  <div className="flex items-center gap-2 col-span-2"><MapPin className="w-4 h-4"/> {car.locationAddress}</div>
+                  <div className="flex items-center gap-2 col-span-2"><MapPin className="w-4 h-4"/> {car.location.address}</div>
                 </div>
 
                 <div className="flex justify-between items-center pt-4 border-t">

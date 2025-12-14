@@ -4,6 +4,6 @@ export const carService = {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   getCars: (params) => apiClient.get('/cars', { params }),
-  getCarDetails: (id) => apiClient.get(`/cars/${id}`),
+  getCarDetails: (carId) => apiClient.get(`/cars/${carId}`),
   getMyCars: () => apiClient.get('/cars/me'),
 };

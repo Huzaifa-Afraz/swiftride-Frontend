@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { hostService } from '../../services/hostService';
+import useAuth from '../../hooks/useAuth'; // Import Auth
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, Legend 
 } from 'recharts';
-import { Car, DollarSign, Clock, TrendingUp, AlertCircle } from 'lucide-react';
+import { Car, DollarSign, Clock, TrendingUp, AlertCircle, Shield, CheckCircle, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const HostDashboard = () => {
-  // Initialize with Safe Defaults (Zero Values)
+  const { user } = useAuth(); // Get User for KYC Status
+  
+  // Initialize with Safe Defaults
   const [data, setData] = useState({
     quickStats: { totalCars: 0, activeBookings: 0, pendingRequests: 0, totalEarnings: 0, thisMonthEarnings: 0 },
     charts: { monthlyEarnings: [], bookingStatus: [] },
@@ -20,13 +23,11 @@ const HostDashboard = () => {
     const fetchData = async () => {
       try {
         const res = await hostService.getDashboardStats();
-        // Check if response has data, otherwise keep default zeros
         if (res.data && res.data.data) {
           setData(res.data.data);
         }
       } catch (error) {
         console.warn("Dashboard API not ready, showing default view.");
-        // We do NOT set error state here, so the UI still renders with 0s
       } finally {
         setLoading(false);
       }
@@ -38,26 +39,42 @@ const HostDashboard = () => {
 
   const { quickStats, charts, recentActivity } = data;
 
-  // Safe Chart Data
   const earningsData = charts?.monthlyEarnings?.length > 0 ? charts.monthlyEarnings : [
     { month: 'Jan', amount: 0 }, { month: 'Feb', amount: 0 }, { month: 'Mar', amount: 0 } 
   ];
   
   const statusData = charts?.bookingStatus?.length > 0 ? charts.bookingStatus : [
-    { name: 'No Data', value: 1 } // Placeholder to keep pie chart visible
+    { name: 'No Data', value: 1 }
   ];
   
   const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444'];
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
-      <div className="flex justify-between items-end mb-8">
+      
+      {/* HEADER WITH KYC STATUS */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Host Dashboard</h1>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-3xl font-bold text-gray-800">Host Dashboard</h1>
+            
+            {/* KYC BADGE */}
+            {user.isVerified ? (
+              <span className="flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold border border-green-200">
+                <CheckCircle className="w-3 h-3" /> Verified Host
+              </span>
+            ) : (
+              <Link to="/dashboard/kyc" className="flex items-center gap-1 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold border border-orange-200 hover:bg-orange-200 transition">
+                <AlertCircle className="w-3 h-3" /> Verification Pending
+              </Link>
+            )}
+          </div>
           <p className="text-gray-500">Welcome back, here is your fleet overview.</p>
         </div>
-        <Link to="/host/add-car" className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
-          + Add New Car
+
+        {/* Link to Add Car (Route is separate or inside dashboard depending on App.js, using standard link) */}
+        <Link to="/host/add-car" className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 flex items-center gap-2">
+          <Car className="w-5 h-5" /> Add New Car
         </Link>
       </div>
 
@@ -69,6 +86,7 @@ const HostDashboard = () => {
           sub={`+PKR ${quickStats?.thisMonthEarnings?.toLocaleString() || 0} this month`}
           icon={<DollarSign className="w-6 h-6 text-green-600" />} 
           bg="bg-green-50" 
+          link="/dashboard/wallet" // UPDATED LINK
         />
         <StatCard 
           title="Active Fleet" 
@@ -76,6 +94,7 @@ const HostDashboard = () => {
           sub="Listed Vehicles"
           icon={<Car className="w-6 h-6 text-indigo-600" />} 
           bg="bg-indigo-50" 
+          link="/dashboard/fleet" // UPDATED LINK
         />
         <StatCard 
           title="Pending Requests" 
@@ -83,7 +102,7 @@ const HostDashboard = () => {
           sub="Requires Action"
           icon={<AlertCircle className="w-6 h-6 text-orange-600" />} 
           bg="bg-orange-50" 
-          link="/host/bookings"
+          link="/dashboard/requests" // UPDATED LINK
         />
         <StatCard 
           title="Active Bookings" 
@@ -91,12 +110,12 @@ const HostDashboard = () => {
           sub="Currently on trip"
           icon={<Clock className="w-6 h-6 text-blue-600" />} 
           bg="bg-blue-50" 
+          link="/dashboard/requests" // UPDATED LINK
         />
       </div>
 
       {/* 2. CHARTS SECTION */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        {/* Revenue Chart */}
         <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-indigo-500" /> Revenue History
@@ -114,7 +133,6 @@ const HostDashboard = () => {
           </div>
         </div>
 
-        {/* Status Pie Chart */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h2 className="text-lg font-bold text-gray-800 mb-6">Booking Status</h2>
           <div className="h-72">
@@ -144,7 +162,7 @@ const HostDashboard = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
           <h2 className="font-bold text-gray-700">Recent Activity</h2>
-          <Link to="/host/bookings" className="text-sm text-indigo-600 hover:underline">View All</Link>
+          <Link to="/dashboard/requests" className="text-sm text-indigo-600 hover:underline">View All</Link>
         </div>
         <div className="divide-y divide-gray-100">
           {(!recentActivity || recentActivity.length === 0) ? (

@@ -11,7 +11,8 @@ const AdminShowrooms = () => {
       .then(res => {
         // --- FIX: DRILL DOWN TO 'res.data.data' ---
         const apiData = res.data?.data || {}; 
-        const dataList = apiData.docs || apiData || [];
+        console.log("Fetched showrooms:", apiData);
+        const dataList = apiData.docs || apiData.users || [];
         
         setShowrooms(Array.isArray(dataList) ? dataList : []);
         setLoading(false);

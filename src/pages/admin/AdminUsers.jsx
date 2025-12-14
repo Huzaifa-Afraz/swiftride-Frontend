@@ -19,8 +19,10 @@ const AdminUsers = () => {
       // 3. .docs = The pagination array
       const apiData = res.data?.data?.users || {}; 
       const dataList = apiData.docs || apiData || [];
+    
       
       setUsers(Array.isArray(dataList) ? dataList : []);
+      console.log("Fetched users:", users);
     } catch (error) {
       console.error(error);
       setUsers([]);
