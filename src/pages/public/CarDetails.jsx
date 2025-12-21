@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { carService } from '../../services/carService';
 import { bookingService } from '../../services/bookingService';
 // 1. UPDATE IMPORT: Removed 'redirectToPaymentGateway' as it's not needed for Safepay
-import { paymentService } from '../../services/paymentService';
+import { paymentService, redirectToPaymentGateway } from '../../services/paymentService';
 import useAuth from '../../hooks/useAuth';
 import { showAlert } from '../../utils/alert';
 import { MapPin, Calendar, Gauge, Fuel, Settings, User, CheckCircle } from 'lucide-react';
@@ -78,11 +78,20 @@ const CarDetails = () => {
       // ============================================================
       
       // Call the new Safepay init function
-      const paymentRes = await paymentService.initSafepayPayment(bookingId);
+      // const paymentRes = await paymentService.initSafepayPayment(bookingId);
+      // const { url } = paymentRes.data?.data || paymentRes.data;
+
+      // this configration is for easypaisa
+            const res = await paymentService.initBookingPayment(bookingId);
+               console.log("initilize payment response is: ", res)
+            const { paymentPageUrl, payload } = res.data.data;
+      
+            redirectToPaymentGateway(paymentPageUrl, payload);
+      
       
       // Extract the URL (Safepay returns { data: { url: "..." } })
       // We check nested 'data.data' first as requested
-      const { url } = paymentRes.data?.data || paymentRes.data;
+      const { url } = res.data?.data || res.data;
       
       if (url) {
          // 3. Simple Redirect

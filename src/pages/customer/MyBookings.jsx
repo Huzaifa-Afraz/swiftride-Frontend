@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { bookingService } from '../../services/bookingService';
 // 1. Update imports: We don't need 'redirectToPaymentGateway' anymore
-import { paymentService } from '../../services/paymentService';
+import { paymentService, redirectToPaymentGateway } from '../../services/paymentService';
 import { showAlert } from '../../utils/alert';
 import { Calendar, Clock, FileText, AlertCircle } from 'lucide-react';
 
@@ -28,9 +28,15 @@ const MyBookings = () => {
   // =========================================================
   const handlePay = async (bookingId) => {
     try {
+      // these are easypaisa configrations
+      const res = await paymentService.initBookingPayment(bookingId);
+      console.log("initilize payment response is: ", res)
+      const { paymentPageUrl, payload } = res.data.data;
+      
+      redirectToPaymentGateway(paymentPageUrl, payload);
+      
       // 1. Call your new Safepay initialization API
-      // Ensure this calls the route: /api/booking/:id/safepay/init
-      const res = await paymentService.initSafepayPayment(bookingId);
+      // const res = await paymentService.initSafepayPayment(bookingId);
       
       // 2. Extract the URL from the response
       // Structure based on your previous backend code: { data: { url: "..." } }
