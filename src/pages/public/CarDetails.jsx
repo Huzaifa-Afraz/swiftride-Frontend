@@ -78,20 +78,18 @@ const CarDetails = () => {
       // ============================================================
       
       // Call the new Safepay init function
-      // const paymentRes = await paymentService.initSafepayPayment(bookingId);
-      // const { url } = paymentRes.data?.data || paymentRes.data;
+      const paymentRes = await paymentService.initSafepayPayment(bookingId);
+      const { url } = paymentRes.data?.data || paymentRes.data;
 
       // this configration is for easypaisa
-            const res = await paymentService.initBookingPayment(bookingId);
-               console.log("initilize payment response is: ", res)
-            const { paymentPageUrl, payload } = res.data.data;
+            // const res = await paymentService.initBookingPayment(bookingId);
+            //    console.log("initilize payment response is: ", res)
+            // const { paymentPageUrl, payload } = res.data.data;
       
-            redirectToPaymentGateway(paymentPageUrl, payload);
+            // redirectToPaymentGateway(paymentPageUrl, payload);
+            // const { url } = res.data?.data || res.data;
       
       
-      // Extract the URL (Safepay returns { data: { url: "..." } })
-      // We check nested 'data.data' first as requested
-      const { url } = res.data?.data || res.data;
       
       if (url) {
          // 3. Simple Redirect
