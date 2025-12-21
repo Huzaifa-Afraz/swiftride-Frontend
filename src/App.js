@@ -40,6 +40,9 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminHosts from './pages/admin/AdminHosts';
 import AdminShowrooms from './pages/admin/AdminShowrooms';
 import useAuth from './hooks/useAuth';
+import PaymentReturn from './pages/public/PaymentReturn';
+import PaymentSuccess from './pages/public/PaymentSuccess';
+import PaymentCancel from './pages/public/PaymentCancel';
 
 function App() {
   return (
@@ -57,6 +60,9 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
+            <Route path="/payment-return" element={<PaymentReturn />} />
+            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/payment/cancel" element={<PaymentCancel />} />
           </Route>
 
           {/* --- NEW UNIFIED DASHBOARD (Sidebar Layout) --- */}

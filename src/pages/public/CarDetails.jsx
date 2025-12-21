@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { carService } from '../../services/carService';
 import { bookingService } from '../../services/bookingService';
+// 1. UPDATE IMPORT: Removed 'redirectToPaymentGateway' as it's not needed for Safepay
+import { paymentService } from '../../services/paymentService';
 import useAuth from '../../hooks/useAuth';
 import { showAlert } from '../../utils/alert';
 import { MapPin, Calendar, Gauge, Fuel, Settings, User, CheckCircle } from 'lucide-react';
@@ -23,13 +25,11 @@ const CarDetails = () => {
   useEffect(() => {
     carService.getCarDetails(carId)
       .then(res => {
-        console.log('Car Details:', res.data);
         setCar(res.data?.data?.car);
         setLoading(false);
       })
       .catch(err => {
         showAlert('Error', 'Failed to load car details', 'error');
-        // navigate('/');
       });
   }, [carId, navigate]);
 
@@ -46,7 +46,6 @@ const CarDetails = () => {
       return;
     }
 
-    // Combine date and time for API
     const startDateTime = new Date(`${bookingDates.startDate}T${bookingDates.startTime}`);
     const endDateTime = new Date(`${bookingDates.endDate}T${bookingDates.endTime}`);
 
@@ -56,16 +55,48 @@ const CarDetails = () => {
     }
 
     try {
-      await bookingService.createBooking({
+      setLoading(true);
+
+      // 1. Create Booking
+      const bookingRes = await bookingService.createBooking({
         carId: car._id,
         startDateTime,
         endDateTime
       });
+
+      // Extract Booking ID (Handling various nested structures)
+      const bookingId = bookingRes.data?.data?.booking?._id || 
+                        bookingRes.data?.data?._id || 
+                        bookingRes.data?._id;
       
-      showAlert('Success!', 'Booking request sent successfully.', 'success');
-      navigate('/my-bookings');
+      if (!bookingId) {
+        throw new Error('Booking created but ID not returned');
+      }
+
+      // ============================================================
+      // 2. SAFEPAY INTEGRATION (Updated Logic)
+      // ============================================================
+      
+      // Call the new Safepay init function
+      const paymentRes = await paymentService.initSafepayPayment(bookingId);
+      
+      // Extract the URL (Safepay returns { data: { url: "..." } })
+      // We check nested 'data.data' first as requested
+      const { url } = paymentRes.data?.data || paymentRes.data;
+      
+      if (url) {
+         // 3. Simple Redirect
+         window.location.href = url;
+      } else {
+         // Fallback if something weird happens
+         showAlert('Success', 'Booking created! Please pay from "My Bookings".', 'success');
+         navigate('/my-bookings');
+      }
+
     } catch (error) {
+      console.error(error);
       showAlert('Booking Failed', error.response?.data?.message || 'Something went wrong', 'error');
+      setLoading(false);
     }
   };
 
@@ -193,7 +224,7 @@ const CarDetails = () => {
                 type="submit" 
                 className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition"
               >
-                Proceed to Book
+                Proceed to Book & Pay
               </button>
             </form>
           </div>

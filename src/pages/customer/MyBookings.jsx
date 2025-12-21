@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { bookingService } from '../../services/bookingService';
-import { paymentService, redirectToPaymentGateway } from '../../services/paymentService';
+// 1. Update imports: We don't need 'redirectToPaymentGateway' anymore
+import { paymentService } from '../../services/paymentService';
 import { showAlert } from '../../utils/alert';
 import { Calendar, Clock, FileText, AlertCircle } from 'lucide-react';
 
 const MyBookings = () => {
-  // Initialize as empty array to prevent "map is not a function" error
   const [bookings, setBookings] = useState([]); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     bookingService.getMyBookings()
       .then(res => {
-        // SAFETY CHECK: Extract array from { docs: [] } or direct []
         const data = res.data.docs || res.data || [];
         setBookings(Array.isArray(data) ? data : []);
         setLoading(false);
@@ -24,20 +23,35 @@ const MyBookings = () => {
       });
   }, []);
 
+  // =========================================================
+  // SAFEPAY INTEGRATION: Updated Handle Pay
+  // =========================================================
   const handlePay = async (bookingId) => {
     try {
-      const res = await paymentService.initBookingPayment(bookingId);
-      const { paymentPageUrl, payload } = res.data;
-      redirectToPaymentGateway(paymentPageUrl, payload);
+      // 1. Call your new Safepay initialization API
+      // Ensure this calls the route: /api/booking/:id/safepay/init
+      const res = await paymentService.initSafepayPayment(bookingId);
+      
+      // 2. Extract the URL from the response
+      // Structure based on your previous backend code: { data: { url: "..." } }
+      const { url } = res.data.data || res.data; 
+
+      if (url) {
+        // 3. Simple Redirect to Safepay
+        window.location.href = url;
+      } else {
+        showAlert('Error', 'Invalid payment URL received', 'error');
+      }
+
     } catch (err) {
-      showAlert('Error', 'Could not initialize payment', 'error');
+      console.error("Payment Error", err);
+      showAlert('Error', 'Could not initialize Safepay payment', 'error');
     }
   };
 
   const handleDownloadInvoice = async (bookingId) => {
     try {
       const response = await bookingService.getInvoice(bookingId);
-      // Create a blob link to download file
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -107,15 +121,15 @@ const MyBookings = () => {
 
               {/* Actions */}
               <div className="flex gap-3 w-full md:w-auto">
-                {booking.paymentStatus === 'pending' && booking.status !== 'cancelled' && (
+                {booking.paymentStatus !== 'paid' && booking.status !== 'cancelled' && (
                   <button 
                     onClick={() => handlePay(booking._id)}
                     className="flex-1 bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition shadow-sm"
                   >
-                    Pay Now
+                    Pay with Safepay
                   </button>
                 )}
-                {/* Invoice Button - Visible if paid/confirmed */}
+                {/* Invoice Button - Visible if paid */}
                 {booking.paymentStatus === 'paid' && (
                   <button 
                     onClick={() => handleDownloadInvoice(booking._id)}
