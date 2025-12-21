@@ -12,7 +12,7 @@ const MyBookings = () => {
   useEffect(() => {
     bookingService.getMyBookings()
       .then(res => {
-        const data = res.data.docs || res.data || [];
+        const data = res.data.docs || res.data?.data || [];
         setBookings(Array.isArray(data) ? data : []);
         setLoading(false);
       })
