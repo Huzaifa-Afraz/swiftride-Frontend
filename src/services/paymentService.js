@@ -1,14 +1,14 @@
 import apiClient from './apiClient';
 export const paymentService = {
-  // initBookingPayment: (bookingId) => apiClient.post(`/payments/booking/${bookingId}/init`, {}),
-  initBookingPayment: (bookingId) => apiClient.post(`/payments/booking/${bookingId}/safepay/init`, {}),
+  initBookingPayment: (bookingId) => apiClient.post(`/payments/booking/${bookingId}/init`, {}),
+  // initBookingPayment: (bookingId) => apiClient.post(`/payments/booking/${bookingId}/safepay/init`, {}),
   //   initBookingPayment: async (bookingId) => {
   //   const res = await apiClient.post(`/payments/booking/${bookingId}/init`);
   //   return res.data;
   // },
-  initSafepayPayment: (bookingId) => apiClient.post(`/payments/booking/${bookingId}/safepay/init`, {}, {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-}),
+//   initSafepayPayment: (bookingId) => apiClient.post(`/payments/booking/${bookingId}/safepay/init`, {}, {
+//     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+// }),
 }
 
 // export const initSafepayPayment = (bookingId) => {
