@@ -94,19 +94,19 @@ const MyBookings = () => {
       ) : (
         <div className="space-y-6">
           {bookings.map(booking => (
-            <div key={booking._id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 hover:shadow-md transition">
+            <div key={booking.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 hover:shadow-md transition">
               
               {/* Car Info */}
               <div className="flex items-center gap-4 flex-1 w-full">
                 <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-                   {booking.carId?.photos?.[0] ? (
-                     <img src={booking.carId.photos[0]} alt="Car" className="w-full h-full object-cover"/>
+                   {booking.car.primaryPhoto ? (
+                     <img src={booking.car.primaryPhoto} alt="Car" className="w-full h-full object-cover"/>
                    ) : (
                      <div className="flex items-center justify-center h-full text-xs text-gray-400">No Image</div>
                    )}
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-gray-900">{booking.carId?.make || 'Unknown'} {booking.carId?.model}</h3>
+                  <h3 className="font-bold text-lg text-gray-900">{booking.car?.make || 'Unknown'} {booking.car?.model}</h3>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-500 mt-1">
                     <span className="flex items-center gap-1"><Calendar className="w-3 h-3"/> {new Date(booking.startDateTime).toLocaleDateString()}</span>
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3"/> {booking.durationHours} Hours</span>

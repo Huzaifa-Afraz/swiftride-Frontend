@@ -12,7 +12,7 @@ const PaymentReturn = () => {
   useEffect(() => {
     // Redirect to bookings after 3 seconds
     const timer = setTimeout(() => {
-      navigate('/my-bookings');
+      navigate('/dashboard/bookings');
     }, 3000);
     return () => clearTimeout(timer);
   }, [navigate]);

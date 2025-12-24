@@ -66,7 +66,7 @@ const CustomerOverview = () => {
               <p className="text-sm text-gray-600">You need to upload your Driving License before you can book a car.</p>
             </div>
           </div>
-          <Link to="/kyc/submit" className="px-6 py-2 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700 transition whitespace-nowrap">
+          <Link to="/dashboard/kyc" className="px-6 py-2 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700 transition whitespace-nowrap">
             Verify Now
           </Link>
         </div>

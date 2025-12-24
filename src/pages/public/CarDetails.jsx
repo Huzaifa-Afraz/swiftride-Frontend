@@ -97,7 +97,7 @@ const CarDetails = () => {
       } else {
          // Fallback if something weird happens
          showAlert('Success', 'Booking created! Please pay from "My Bookings".', 'success');
-         navigate('/my-bookings');
+         navigate('/dashboard/bookings');
       }
 
     } catch (error) {
