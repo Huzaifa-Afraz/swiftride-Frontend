@@ -97,6 +97,14 @@ const AdminBookingDetail = () => {
                 Payment Status: {booking.paymentStatus}
               </span>
             </div>
+             <div className="flex justify-between py-2 border-b border-dashed">
+              <span>Download Invoice</span>
+              <span className="text-gray-500">PKR {booking?.invoiceDownloadPath}</span>
+            </div>
+             <div className="flex justify-between py-2 border-b border-dashed">
+              <span>PDF Invoice</span>
+              <span className="text-gray-500">PKR {booking?.invoicePdfPath}</span>
+            </div>
           </div>
 
           {/* Timeline */}
