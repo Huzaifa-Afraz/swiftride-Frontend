@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import apiClient from '../../services/apiClient';
-import { ArrowLeft, Calendar, User, CreditCard, Shield } from 'lucide-react';
+import { ArrowLeft, Calendar, User, CreditCard, Shield, FileText, Download } from 'lucide-react';
 
 const AdminBookingDetail = () => {
   const { id } = useParams();
@@ -30,7 +30,7 @@ const AdminBookingDetail = () => {
         {/* Header */}
         <div className="bg-gray-50 px-8 py-6 border-b flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Invoice #{booking.id.substring(0,8).toUpperCase()}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Invoice #{booking.invoiceNumber || booking.id.substring(0,8).toUpperCase()}</h1>
             <p className="text-sm text-gray-500">Created on {new Date(booking.createdAt).toDateString()}</p>
           </div>
           <div className="text-right">
@@ -82,29 +82,45 @@ const AdminBookingDetail = () => {
             </h3>
             <div className="flex justify-between py-2 border-b border-dashed">
               <span>Total Amount</span>
-              <span className="font-bold">PKR {booking?.totalPrice}</span>
+              <span className="font-bold">PKR {booking?.totalPrice?.toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-dashed">
               <span>Platform Fee (Commission)</span>
-              <span className="text-gray-500">PKR {booking?.platformCommissionAmount}</span>
+              <span className="text-gray-500">PKR {booking?.platformCommissionAmount?.toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-dashed">
               <span>Owner Earning</span>
-              <span className="text-green-600 font-bold">PKR {booking?.ownerEarningAmount}</span>
+              <span className="text-green-600 font-bold">PKR {booking?.ownerEarningAmount?.toLocaleString()}</span>
             </div>
-            <div className="mt-4">
+            
+            <div className="mt-4 mb-6">
               <span className={`px-2 py-1 rounded text-xs font-bold ${booking.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                 Payment Status: {booking.paymentStatus}
               </span>
             </div>
-             <div className="flex justify-between py-2 border-b border-dashed">
-              <span>Download Invoice</span>
-              <span className="text-gray-500">PKR {booking?.invoiceDownloadPath}</span>
+
+            {/* --- UPDATED: Invoice Download Section --- */}
+            <div>
+              <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Documents</h4>
+              {booking.pdfPath ? (
+                <a 
+                  href={booking.pdfPath} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group flex items-center justify-center gap-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-all shadow-sm hover:shadow-md"
+                >
+                  <FileText className="w-5 h-5" />
+                  <span>Download PDF Invoice</span>
+                  <Download className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity ml-auto" />
+                </a>
+              ) : (
+                <div className="flex items-center gap-2 p-3 bg-gray-100 rounded-lg text-gray-500 text-sm italic">
+                  <FileText className="w-4 h-4" />
+                  <span>Invoice not generated yet</span>
+                </div>
+              )}
             </div>
-             <div className="flex justify-between py-2 border-b border-dashed">
-              <span>PDF Invoice</span>
-              <span className="text-gray-500">PKR {booking?.invoicePdfPath}</span>
-            </div>
+
           </div>
 
           {/* Timeline */}
