@@ -90,15 +90,15 @@ const AdminBookings = () => {
             {loading ? (
               <tr><td colSpan="7" className="p-10 text-center text-gray-500">Loading data...</td></tr>
             ) : bookings.length > 0 ? bookings.map((b) => (
-              <tr key={b._id} className="hover:bg-gray-50">
-                <td className="p-4 font-mono text-xs text-gray-600">{b._id.substring(0,8).toUpperCase()}</td>
+              <tr key={b.id} className="hover:bg-gray-50">
+                <td className="p-4 font-mono text-xs text-gray-600">{b.id.substring(0,8).toUpperCase()}</td>
                 <td className="p-4">
-                  <div className="font-medium text-gray-900">{b.customerId?.fullName || 'Unknown'}</div>
-                  <div className="text-xs text-gray-500">{b.customerId?.email}</div>
+                  <div className="font-medium text-gray-900">{b.customer?.fullName || 'Unknown'}</div>
+                  <div className="text-xs text-gray-500">{b.customer?.email}</div>
                 </td>
                 <td className="p-4">
-                  <div className="text-sm font-medium">{b.carId?.make} {b.carId?.model}</div>
-                  <div className="text-xs text-gray-500">{b.carId?.plateNumber}</div>
+                  <div className="text-sm font-medium">{b.car?.make} {b.car?.model}</div>
+                  <div className="text-xs text-gray-500">{b.car?.plateNumber}</div>
                 </td>
                 <td className="p-4 text-xs text-gray-600">
                   {b.startDateTime ? new Date(b.startDateTime).toLocaleDateString() : 'N/A'}
@@ -119,7 +119,7 @@ const AdminBookings = () => {
                   </span>
                 </td>
                 <td className="p-4 text-right">
-                  <Link to={`/admin/bookings/${b._id}`} className="inline-flex items-center justify-center p-2 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition">
+                  <Link to={`/admin/bookings/${b.id}`} className="inline-flex items-center justify-center p-2 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition">
                     <Eye className="w-4 h-4" />
                   </Link>
                 </td>
