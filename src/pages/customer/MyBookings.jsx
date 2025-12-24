@@ -12,7 +12,8 @@ const MyBookings = () => {
   useEffect(() => {
     bookingService.getMyBookings()
       .then(res => {
-        const data = res.data.docs || res.data?.data || [];
+        console.log("response is: ", res.data)
+        const data = res.data.docs || res.data?.data?.items || [];
         setBookings(Array.isArray(data) ? data : []);
         setLoading(false);
       })
@@ -29,14 +30,14 @@ const MyBookings = () => {
   const handlePay = async (bookingId) => {
     try {
       // these are easypaisa configrations
-      const res = await paymentService.initBookingPayment(bookingId);
-      console.log("initilize payment response is: ", res)
-      const { paymentPageUrl, payload } = res.data.data;
+      // const res = await paymentService.initBookingPayment(bookingId);
+      // console.log("initilize payment response is: ", res)
+      // const { paymentPageUrl, payload } = res.data.data;
       
-      redirectToPaymentGateway(paymentPageUrl, payload);
+      // redirectToPaymentGateway(paymentPageUrl, payload);
       
       // 1. Call your new Safepay initialization API
-      // const res = await paymentService.initSafepayPayment(bookingId);
+      const res = await paymentService.initSafepayPayment(bookingId);
       
       // 2. Extract the URL from the response
       // Structure based on your previous backend code: { data: { url: "..." } }
@@ -129,7 +130,7 @@ const MyBookings = () => {
               <div className="flex gap-3 w-full md:w-auto">
                 {booking.paymentStatus !== 'paid' && booking.status !== 'cancelled' && (
                   <button 
-                    onClick={() => handlePay(booking._id)}
+                    onClick={() => handlePay(booking.id)}
                     className="flex-1 bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition shadow-sm"
                   >
                     Pay with Safepay
@@ -138,7 +139,7 @@ const MyBookings = () => {
                 {/* Invoice Button - Visible if paid */}
                 {booking.paymentStatus === 'paid' && (
                   <button 
-                    onClick={() => handleDownloadInvoice(booking._id)}
+                    onClick={() => handleDownloadInvoice(booking.id)}
                     className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition border border-gray-200"
                     title="Download Invoice"
                   >
