@@ -30,7 +30,7 @@ const AdminBookingDetail = () => {
         {/* Header */}
         <div className="bg-gray-50 px-8 py-6 border-b flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Invoice #{booking._id.substring(0,8).toUpperCase()}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Invoice #{booking.id.substring(0,8).toUpperCase()}</h1>
             <p className="text-sm text-gray-500">Created on {new Date(booking.createdAt).toDateString()}</p>
           </div>
           <div className="text-right">
@@ -48,9 +48,9 @@ const AdminBookingDetail = () => {
             <h3 className="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center gap-2">
               <User className="w-4 h-4" /> Customer
             </h3>
-            <p className="font-bold text-lg">{booking.customerId?.fullName}</p>
-            <p className="text-gray-600">{booking.customerId?.email}</p>
-            <p className="text-gray-600">{booking.customerId?.phoneNumber}</p>
+            <p className="font-bold text-lg">{booking.customer?.fullName}</p>
+            <p className="text-gray-600">{booking.customer?.email}</p>
+            <p className="text-gray-600">{booking.customer?.phoneNumber}</p>
           </div>
 
           {/* Owner Info */}
@@ -58,20 +58,20 @@ const AdminBookingDetail = () => {
             <h3 className="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center gap-2">
               <Shield className="w-4 h-4" /> Owner / Host
             </h3>
-            <p className="font-bold text-lg">{booking.ownerId?.fullName || booking.ownerId?.showroomName}</p>
-            <p className="text-gray-600 capitalize">Role: {booking.ownerRole}</p>
-            <p className="text-gray-600">{booking.ownerId?.email}</p>
+            <p className="font-bold text-lg">{booking?.owner?.fullName || booking.owner?.showroomName}</p>
+            <p className="text-gray-600 capitalize">Role: {booking?.owner?.role}</p>
+            <p className="text-gray-600">{booking?.owner?.email}</p>
           </div>
 
           {/* Car Info */}
           <div className="col-span-1 md:col-span-2 bg-gray-50 p-6 rounded-xl flex gap-6 items-center">
             <div className="w-32 h-24 bg-gray-200 rounded-lg overflow-hidden">
-               {booking.carId?.photos?.[0] && <img src={booking.carId.photos[0]} alt="Car" className="w-full h-full object-cover"/>}
+               {booking?.car?.primaryPhoto && <img src={booking?.car?.primaryPhoto} alt="Car" className="w-full h-full object-cover"/>}
             </div>
             <div>
-              <h3 className="font-bold text-xl">{booking.carId?.make} {booking.carId?.model}</h3>
-              <p className="text-gray-500">{booking.carId?.year} • {booking.carId?.plateNumber}</p>
-              <p className="text-sm text-gray-400 mt-1">{booking.carId?.locationAddress}</p>
+              <h3 className="font-bold text-xl">{booking.car?.make} {booking.car?.model}</h3>
+              <p className="text-gray-500">{booking?.car?.year} • {booking?.car?.plateNumber}</p>
+              <p className="text-sm text-gray-400 mt-1">{booking?.car?.location}</p>
             </div>
           </div>
 
@@ -82,15 +82,15 @@ const AdminBookingDetail = () => {
             </h3>
             <div className="flex justify-between py-2 border-b border-dashed">
               <span>Total Amount</span>
-              <span className="font-bold">PKR {booking.totalPrice}</span>
+              <span className="font-bold">PKR {booking?.totalPrice}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-dashed">
               <span>Platform Fee (Commission)</span>
-              <span className="text-gray-500">PKR {booking.commissionAmount}</span>
+              <span className="text-gray-500">PKR {booking?.platformCommissionAmount}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-dashed">
               <span>Owner Earning</span>
-              <span className="text-green-600 font-bold">PKR {booking.ownerEarning}</span>
+              <span className="text-green-600 font-bold">PKR {booking?.ownerEarningAmount}</span>
             </div>
             <div className="mt-4">
               <span className={`px-2 py-1 rounded text-xs font-bold ${booking.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
