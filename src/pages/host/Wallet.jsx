@@ -15,11 +15,14 @@ const Wallet = () => {
           walletService.getTransactions()
         ]);
         
-        setWallet(walletRes.data);
-        
+        setWallet(walletRes.data.data);
+        // console.log("Wallet Data:", walletRes.data);
+        // console.log("Transactions Data:", txRes.data);
         // SAFETY FIX: Ensure transactions is always an array
-        const txData = txRes.data.docs || txRes.data || [];
+        const txData = txRes.data.docs || txRes.data.data?.items || [];
         setTransactions(Array.isArray(txData) ? txData : []);
+
+
         
         setLoading(false);
       } catch (error) {
@@ -73,7 +76,7 @@ const Wallet = () => {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {transactions.length > 0 ? transactions.map((tx) => (
-                <tr key={tx._id} className="hover:bg-gray-50 transition">
+                <tr key={tx.id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {new Date(tx.createdAt).toLocaleDateString()}
                   </td>

@@ -89,6 +89,7 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={['host', 'showroom']} />}>
              <Route element={<DashboardLayout />}>
                 <Route path="/host/add-car" element={<AddCar />} />
+                <Route path="/host/edit-car/:id" element={<AddCar />} />
              </Route>
           </Route>
 

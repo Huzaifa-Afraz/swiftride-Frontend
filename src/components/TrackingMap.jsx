@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import { connectSocket, joinTrackingRoom, subscribeToLocation, disconnectSocket } from "../services/socketService";
-// import your car icon here
-import carIcon from "../assets/car.png"; 
 
 const containerStyle = { width: "100%", height: "500px" };
 
@@ -33,10 +31,7 @@ const TrackingMap = ({ bookingId, initialLocation }) => {
     <GoogleMap mapContainerStyle={containerStyle} center={position} zoom={15}>
       <Marker 
         position={position}
-        icon={{
-             url: carIcon,
-             scaledSize: new window.google.maps.Size(40, 40)
-        }}
+        // Icon removed because asset is missing
       />
     </GoogleMap>
   );

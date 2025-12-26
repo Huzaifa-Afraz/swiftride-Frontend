@@ -9,5 +9,6 @@ export const carService = {
   }
    }),
   getCarDetails: (carId) => apiClient.get(`/cars/${carId}`),
+  updateCar: (carId, data) => apiClient.patch(`/cars/${carId}`, data),
   getMyCars: () => apiClient.get('/cars/me'),
 };

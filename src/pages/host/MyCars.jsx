@@ -65,7 +65,10 @@ const MyCars = () => {
 
                 <div className="flex justify-between items-center pt-4 border-t">
                   <span className="font-bold text-indigo-600">PKR {car.pricePerDay}/day</span>
-                  <Link to={`/cars/${car._id}`} className="text-sm text-gray-500 hover:text-indigo-600">View Listing</Link>
+                  <div className="flex gap-3">
+                    <Link to={`/host/edit-car/${car._id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">Edit</Link>
+                    <Link to={`/cars/${car._id}`} className="text-sm text-gray-500 hover:text-indigo-600">View Listing</Link>
+                  </div>
                 </div>
               </div>
             </div>
