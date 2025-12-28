@@ -30,6 +30,7 @@ import AddCar from './pages/host/AddCar';
 import OwnerBookings from './pages/host/OwnerBookings';
 import Wallet from './pages/host/Wallet';
 import KYCSubmit from './pages/common/KYCSubmit';
+import Inbox from './pages/common/Inbox';
 
 // Admin Pages... (Keep existing imports)
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -71,6 +72,7 @@ function App() {
               
               {/* 1. Shared Routes */}
               <Route path="profile" element={<UserProfile />} />
+              <Route path="inbox" element={<Inbox />} />
               <Route path="kyc" element={<KYCSubmit />} />
 
               {/* 2. Customer Routes */}

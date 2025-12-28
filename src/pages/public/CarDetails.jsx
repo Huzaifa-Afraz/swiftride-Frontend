@@ -6,7 +6,9 @@ import { paymentService } from '../../services/paymentService'; // Removed unuse
 import useAuth from '../../hooks/useAuth';
 import { showAlert } from '../../utils/alert';
 import Swal from 'sweetalert2'; // Added for better alerts
-import { MapPin, Calendar, Gauge, Fuel, Settings, User, CheckCircle, Clock, Info } from 'lucide-react';
+import { MapPin, Calendar, Gauge, Fuel, Settings, User, CheckCircle, Clock, Info, MessageCircle } from 'lucide-react';
+import ReviewList from '../../components/reviews/ReviewList';
+import chatService from '../../services/chatService';
 
 const DAYS_MAP = {
   0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday'
@@ -154,6 +156,22 @@ const CarDetails = () => {
     }
   };
 
+  const handleContactHost = async () => {
+    if (!user) {
+      showAlert('Login Required', 'Please login to contact the host', 'info');
+      return navigate('/login');
+    }
+    
+    try {
+      const chat = await chatService.createOrGetChat(car.owner, car._id);
+      // Navigate to Inbox and maybe select the chat (logic to select needs passing state or context, for now just redirect)
+      navigate('/dashboard/inbox'); 
+    } catch (error) {
+      console.error(error);
+      showAlert('Error', 'Could not open chat', 'error');
+    }
+  };
+
   if (loading) return <div className="p-10 text-center">Loading...</div>;
   if (!car) return <div className="p-10 text-center">Car not found</div>;
 
@@ -192,6 +210,13 @@ const CarDetails = () => {
             <MapPin className="w-5 h-5 text-indigo-600" />
             <span>{car.location?.address}</span>
           </div>
+
+          <button 
+            onClick={handleContactHost}
+            className="flex items-center gap-2 text-indigo-600 font-semibold mb-6 hover:text-indigo-800 transition"
+          >
+            <MessageCircle className="w-5 h-5" /> Contact Host
+          </button>
 
           <div className="flex items-end gap-2 mb-8 border-b pb-6">
             <span className="text-4xl font-bold text-indigo-600">PKR {car.pricePerDay}</span>
@@ -305,6 +330,11 @@ const CarDetails = () => {
             </form>
           </div>
         </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div className="mt-12">
+        <ReviewList carId={car._id} />
       </div>
     </div>
   );

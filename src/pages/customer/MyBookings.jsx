@@ -3,11 +3,14 @@ import { bookingService } from '../../services/bookingService';
 // 1. Update imports: We don't need 'redirectToPaymentGateway' anymore
 import { paymentService, redirectToPaymentGateway } from '../../services/paymentService';
 import { showAlert } from '../../utils/alert';
-import { Calendar, Clock, FileText, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, FileText, AlertCircle, Star } from 'lucide-react';
+import ReviewForm from '../../components/reviews/ReviewForm';
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]); 
   const [loading, setLoading] = useState(true);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
 
   useEffect(() => {
     bookingService.getMyBookings()
@@ -136,20 +139,27 @@ const MyBookings = () => {
                     Pay with Safepay
                   </button>
                 )}
-                {/* Invoice Button - Visible if paid */}
-                {booking.paymentStatus === 'paid' && (
+                {/* Review Button - Visible if Completed */}
+                {booking.status === 'completed' && (
                   <button 
-                    onClick={() => handleDownloadInvoice(booking.id)}
-                    className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition border border-gray-200"
-                    title="Download Invoice"
+                    onClick={() => { setSelectedBookingId(booking._id); setShowReviewModal(true); }}
+                    className="flex-1 flex items-center justify-center gap-2 bg-yellow-50 text-yellow-700 px-4 py-2 rounded-lg font-medium hover:bg-yellow-100 transition border border-yellow-200"
                   >
-                    <FileText className="w-4 h-4" /> Invoice
+                    <Star className="w-4 h-4" /> Review
                   </button>
                 )}
               </div>
             </div>
           ))}
         </div>
+      )}
+
+      {showReviewModal && (
+        <ReviewForm 
+          bookingId={selectedBookingId} 
+          onClose={() => { setShowReviewModal(false); setSelectedBookingId(null); }}
+          onSuccess={() => { /* Optionally refresh bookings but generic alert is handled in form */ }}
+        />
       )}
     </div>
   );
