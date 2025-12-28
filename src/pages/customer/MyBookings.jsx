@@ -1,13 +1,16 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { bookingService } from '../../services/bookingService';
 // 1. Update imports: We don't need 'redirectToPaymentGateway' anymore
-import { paymentService, redirectToPaymentGateway } from '../../services/paymentService';
+import { paymentService } from '../../services/paymentService';
 import { showAlert } from '../../utils/alert';
-import { Calendar, Clock, FileText, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, AlertCircle, Star } from 'lucide-react';
+import ReviewForm from '../../components/reviews/ReviewForm';
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
 
   useEffect(() => {
     bookingService.getMyBookings()
