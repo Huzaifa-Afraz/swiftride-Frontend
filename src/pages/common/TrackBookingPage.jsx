@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import apibase from '../services/apibase'; // Your existing API service
+import apiClient from '../../services/apiClient';
 import TrackingMap from '../../components/TrackingMap';
 
 const TrackBookingPage = () => {
@@ -12,9 +12,8 @@ const TrackBookingPage = () => {
   useEffect(() => {
     const fetchBookingDetails = async () => {
       try {
-        // Assuming your backend has: GET /api/bookings/:id
-        const response = await apibase.get(`/bookings/${id}`);
-        setBooking(response.data);
+        const response = await apiClient.get(`/bookings/${id}`);
+        setBooking(response.data.data || response.data);
       } catch (error) {
         console.error("Failed to load booking:", error);
       } finally {
@@ -25,25 +24,24 @@ const TrackBookingPage = () => {
     fetchBookingDetails();
   }, [id]);
 
-  if (loading) return <div>Loading Trip Details...</div>;
-  if (!booking) return <div>Booking not found.</div>;
+  if (loading) return <div className="p-10 text-center">Loading Trip Details...</div>;
+  if (!booking) return <div className="p-10 text-center">Booking not found.</div>;
 
   // Optional: Only show map if the ride is actually active
   if (booking.status !== 'ongoing') {
-    return <div className="p-10">This ride is currently {booking.status}.</div>;
+    return <div className="p-10 text-center text-lg">This ride is currently <strong>{booking.status}</strong>.</div>;
   }
 
   return (
-    <div className="tracking-page-container">
-      <h1>Live Ride Tracking</h1>
-      <p>Ride ID: {booking._id}</p>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">🚗 Live Ride Tracking</h1>
+      <p className="text-gray-600 mb-4">Booking ID: {booking.id || booking._id}</p>
 
       {/* Render the Map and pass the necessary props */}
-      <div style={{ marginTop: '20px' }}>
+      <div className="rounded-xl overflow-hidden shadow-lg">
         <TrackingMap
-           bookingId={booking._id} 
-           // Pass the last known location from DB so map doesn't start empty
-           initialLocation={booking.currentLocation} 
+          bookingId={booking.id || booking._id}
+          initialLocation={booking.currentLocation}
         />
       </div>
     </div>
