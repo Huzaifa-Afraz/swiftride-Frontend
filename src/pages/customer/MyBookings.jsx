@@ -1,16 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { bookingService } from '../../services/bookingService';
 // 1. Update imports: We don't need 'redirectToPaymentGateway' anymore
 import { paymentService, redirectToPaymentGateway } from '../../services/paymentService';
 import { showAlert } from '../../utils/alert';
-import { Calendar, Clock, FileText, AlertCircle, Star } from 'lucide-react';
-import ReviewForm from '../../components/reviews/ReviewForm';
+import { Calendar, Clock, FileText, AlertCircle } from 'lucide-react';
 
 const MyBookings = () => {
-  const [bookings, setBookings] = useState([]); 
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [selectedBookingId, setSelectedBookingId] = useState(null);
 
   useEffect(() => {
     bookingService.getMyBookings()
@@ -36,15 +33,15 @@ const MyBookings = () => {
       // const res = await paymentService.initBookingPayment(bookingId);
       // console.log("initilize payment response is: ", res)
       // const { paymentPageUrl, payload } = res.data.data;
-      
+
       // redirectToPaymentGateway(paymentPageUrl, payload);
-      
+
       // 1. Call your new Safepay initialization API
       const res = await paymentService.initSafepayPayment(bookingId);
-      
+
       // 2. Extract the URL from the response
       // Structure based on your previous backend code: { data: { url: "..." } }
-      const { url } = res.data.data || res.data; 
+      const { url } = res.data.data || res.data;
 
       if (url) {
         // 3. Simple Redirect to Safepay
@@ -75,7 +72,7 @@ const MyBookings = () => {
   };
 
   const getStatusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case 'confirmed': return 'bg-green-100 text-green-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'cancelled': return 'bg-red-100 text-red-800';
@@ -88,7 +85,7 @@ const MyBookings = () => {
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold mb-8">My Bookings</h1>
-      
+
       {(!bookings || bookings.length === 0) ? (
         <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-dashed">
           <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
@@ -98,21 +95,21 @@ const MyBookings = () => {
         <div className="space-y-6">
           {bookings.map(booking => (
             <div key={booking.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 hover:shadow-md transition">
-              
+
               {/* Car Info */}
               <div className="flex items-center gap-4 flex-1 w-full">
                 <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-                   {booking.car.primaryPhoto ? (
-                     <img src={booking.car.primaryPhoto} alt="Car" className="w-full h-full object-cover"/>
-                   ) : (
-                     <div className="flex items-center justify-center h-full text-xs text-gray-400">No Image</div>
-                   )}
+                  {booking.car.primaryPhoto ? (
+                    <img src={booking.car.primaryPhoto} alt="Car" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-xs text-gray-400">No Image</div>
+                  )}
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-gray-900">{booking.car?.make || 'Unknown'} {booking.car?.model}</h3>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-500 mt-1">
-                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3"/> {new Date(booking.startDateTime).toLocaleDateString()}</span>
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3"/> {booking.durationHours} Hours</span>
+                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(booking.startDateTime).toLocaleDateString()}</span>
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {booking.durationHours} Hours</span>
                   </div>
                 </div>
               </div>
@@ -124,26 +121,27 @@ const MyBookings = () => {
                 </span>
                 <p className="text-2xl font-bold text-indigo-600 mt-2">PKR {booking.totalPrice}</p>
                 <div className="flex items-center md:justify-end gap-1 text-xs text-gray-500 mt-1">
-                   {booking.paymentStatus === 'unpaid' && <AlertCircle className="w-3 h-3 text-orange-500" />}
-                   Payment: <span className={`font-medium ${booking.paymentStatus === 'paid' ? 'text-green-600' : 'text-orange-500'}`}>{booking.paymentStatus}</span>
+                  {booking.paymentStatus === 'unpaid' && <AlertCircle className="w-3 h-3 text-orange-500" />}
+                  Payment: <span className={`font-medium ${booking.paymentStatus === 'paid' ? 'text-green-600' : 'text-orange-500'}`}>{booking.paymentStatus}</span>
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex gap-3 w-full md:w-auto">
                 {booking.paymentStatus !== 'paid' && booking.status !== 'cancelled' && (
-                  <button 
+                  <button
                     onClick={() => handlePay(booking.id)}
                     className="flex-1 bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition shadow-sm"
                   >
                     Pay with Safepay
                   </button>
                 )}
-                {/* Review Button - Visible if Completed */}
-                {booking.status === 'completed' && (
+                {/* Invoice Button - Visible if paid */}
+                {booking.paymentStatus === 'paid' && (
                   <button 
-                    onClick={() => { setSelectedBookingId(booking._id); setShowReviewModal(true); }}
-                    className="flex-1 flex items-center justify-center gap-2 bg-yellow-50 text-yellow-700 px-4 py-2 rounded-lg font-medium hover:bg-yellow-100 transition border border-yellow-200"
+                    onClick={() => handleDownloadInvoice(booking.id)}
+                    className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition border border-gray-200"
+                    title="Download Invoice"
                   >
                     <Star className="w-4 h-4" /> Review
                   </button>

@@ -19,6 +19,7 @@ import Contact from './pages/public/Contact';
 import HowItWorks from './pages/public/HowItWorks';
 import NotFound from './pages/common/NotFound';
 import Unauthorized from './pages/common/Unauthorized';
+import TrackBookingPage from './pages/common/TrackBookingPage';
 
 // Dashboard Pages
 import CustomerOverview from './pages/customer/CustomerOverview'; // NEW
@@ -69,7 +70,7 @@ function App() {
           {/* --- NEW UNIFIED DASHBOARD (Sidebar Layout) --- */}
           <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['customer', 'host', 'showroom']} />}>
             <Route element={<DashboardLayout />}>
-              
+
               {/* 1. Shared Routes */}
               <Route path="profile" element={<UserProfile />} />
               <Route path="inbox" element={<Inbox />} />
@@ -83,28 +84,29 @@ function App() {
               <Route path="fleet" element={<MyCars />} />
               <Route path="requests" element={<OwnerBookings />} />
               <Route path="wallet" element={<Wallet />} />
+              <Route path="track/:id" element={<TrackBookingPage />} />
             </Route>
           </Route>
 
           {/* --- HOST ADD CAR (Keep separate or move to dashboard as needed) --- */}
           {/* We link to /host/add-car in sidebar, so we keep this route accessible */}
           <Route element={<ProtectedRoute allowedRoles={['host', 'showroom']} />}>
-             <Route element={<DashboardLayout />}>
-                <Route path="/host/add-car" element={<AddCar />} />
-                <Route path="/host/edit-car/:id" element={<AddCar />} />
-             </Route>
+            <Route element={<DashboardLayout />}>
+              <Route path="/host/add-car" element={<AddCar />} />
+              <Route path="/host/edit-car/:id" element={<AddCar />} />
+            </Route>
           </Route>
 
           {/* --- ADMIN PANEL (Admin Layout) --- */}
           <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route element={<AdminLayout />}>
-               <Route path="dashboard" element={<AdminDashboard />} />
-               <Route path="kyc" element={<AdminKYC />} />
-               <Route path="bookings" element={<AdminBookings />} />
-               <Route path="bookings/:id" element={<AdminBookingDetail />} />
-               <Route path="users" element={<AdminUsers />} />
-               <Route path="hosts" element={<AdminHosts />} />
-               <Route path="showrooms" element={<AdminShowrooms />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="kyc" element={<AdminKYC />} />
+              <Route path="bookings" element={<AdminBookings />} />
+              <Route path="bookings/:id" element={<AdminBookingDetail />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="hosts" element={<AdminHosts />} />
+              <Route path="showrooms" element={<AdminShowrooms />} />
             </Route>
           </Route>
 
