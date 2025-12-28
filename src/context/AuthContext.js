@@ -71,6 +71,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const googleLogin = async (dataPayload) => {
+    try {
+      const response = await authService.googleLogin(dataPayload);
+      const data = response.data.data || response.data; // Support diverse response shapes
+      const { token, user } = data;
+
+      if (token) {
+        localStorage.setItem("token", token);
+        updateUser(user);
+        return { success: true, role: user.role };
+      }
+      return { success: false, message: "No token received" };
+    } catch (error) {
+       // Pass the error object back so caller can check status code (e.g. 400)
+       // We attach the full error response data for the component to handle (e.g. "Role is required")
+      return { 
+        success: false, 
+        message: error.response?.data?.message || "Google Login failed",
+        status: error.response?.status 
+      };
+    }
+  };
+
   const logout = async () => {
     try {
       await authService.logout();
@@ -85,7 +108,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, loading, updateUser }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, googleLogin, logout, loading, updateUser }}>
       {!loading && children}
     </AuthContext.Provider>
   );

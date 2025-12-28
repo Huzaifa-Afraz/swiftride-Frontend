@@ -7,4 +7,5 @@ export const authService = {
   resetPassword: (token, password) => apiClient.post('/auth/reset-password', { token, password }),
   logout: () => apiClient.post('/auth/logout'),
   getCurrentUser: () => apiClient.get('/auth/me'),
+  googleLogin: (data) => apiClient.post('/auth/google-login', data),
 };

@@ -87,8 +87,12 @@ const DashboardLayout = () => {
           {/* User & Logout Area */}
           <div className="p-4 border-t border-gray-50">
             <div className="bg-gray-50 rounded-xl p-4 mb-3 flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
-                {user.fullName?.charAt(0) || 'U'}
+              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold overflow-hidden border border-indigo-200">
+                {user.profilePicture ? (
+                  <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  user.fullName?.charAt(0) || 'U'
+                )}
               </div>
               <div className="overflow-hidden">
                 <p className="text-sm font-bold text-gray-900 truncate">{user.fullName || user.showroomName}</p>

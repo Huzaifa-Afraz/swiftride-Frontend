@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { showAlert } from '../../utils/alert';
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth, googleProvider } from "../../firebase";
+import RoleSelectionModal from '../../components/auth/RoleSelectionModal';
+import useAuth from '../../hooks/useAuth';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -11,22 +15,75 @@ const Signup = () => {
     fullName: '', email: '', password: '', phoneNumber: '', showroomName: ''
   });
 
+  // --- Google Login Logic ---
+  const { googleLogin } = useAuth();
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [tempGoogleCreds, setTempGoogleCreds] = useState(null);
+
+  const handleFirebaseGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      
+      // Get the Google ID Token (not Firebase Token) for backend verification
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const googleIdToken = credential?.idToken;
+
+      if (!googleIdToken) {
+         throw new Error("Could not retrieve Google ID Token");
+      }
+      
+      // 1. Try login without role
+      const loginResult = await googleLogin({ idToken: googleIdToken });
+      
+      if (loginResult.success) {
+        navigate('/');
+      } else {
+        // 2. If backend says "Role required" (status 400), show modal
+        if (loginResult.status === 400) {
+           setTempGoogleCreds(googleIdToken);
+           setShowRoleModal(true);
+        } else {
+          showAlert('Google Signup Failed', loginResult.message, 'error');
+        }
+      }
+    } catch (error) {
+      console.error("Firebase Signup Error:", error);
+      showAlert("Google Signup Failed", error.message, 'error');
+    }
+  };
+
+  const handleRoleSelect = async (selectedRole, showroomName) => {
+    // 3. Retry login WITH role
+    const result = await googleLogin({ 
+      idToken: tempGoogleCreds, 
+      role: selectedRole, 
+      showroomName 
+    });
+
+    if (result.success) {
+      setShowRoleModal(false);
+      navigate('/');
+    } else {
+      showAlert('Google Signup Failed', result.message, 'error');
+    }
+  };
+  // --------------------------
+
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      let response;
       if (role === 'showroom') {
         // Showroom has slightly different fields based on Postman
-        response = await authService.signupShowroom({
+        await authService.signupShowroom({
           showroomName: formData.showroomName,
           email: formData.email,
           password: formData.password
         });
       } else {
         // Customer or Host
-        response = await authService.signup({
+        await authService.signup({
           fullName: formData.fullName,
           email: formData.email,
           password: formData.password,
@@ -48,6 +105,27 @@ const Signup = () => {
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Create Account</h2>
           <p className="mt-2 text-sm text-gray-600">Join SwiftRide today</p>
+        </div>
+
+        {/* Google Signup Button */}
+        <div className="mt-6 flex justify-center">
+             <button
+              type="button"
+              onClick={handleFirebaseGoogleLogin}
+              className="flex items-center justify-center w-full bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+            >
+              <img className="h-5 w-5 mr-2" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google logo" />
+              Sign up with Google
+            </button>
+        </div>
+
+        <div className="relative mt-6 mb-2">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">Or sign up with email</span>
+          </div>
         </div>
 
         {/* Role Switcher Tabs */}
@@ -134,6 +212,12 @@ const Signup = () => {
            Already have an account? <Link to="/login" className="text-indigo-600 font-bold">Login</Link>
         </div>
       </div>
+
+       <RoleSelectionModal 
+        isOpen={showRoleModal} 
+        onClose={() => setShowRoleModal(false)}
+        onRoleSelect={handleRoleSelect}
+      />
     </div>
   );
 };

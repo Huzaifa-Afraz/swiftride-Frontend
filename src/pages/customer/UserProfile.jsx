@@ -5,7 +5,51 @@ import { User, Shield, CreditCard, Car, LayoutDashboard, LogOut, Clock, FileText
 import Swal from 'sweetalert2';
 
 const UserProfile = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
+  const [uploading, setUploading] = React.useState(false);
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      Swal.fire('Error', 'Image too large (max 2MB)', 'error');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    setUploading(true);
+    try {
+      // Assuming you have an api client instance or use axios directly
+      // Better to use apiClient if available to handle headers automatically
+      // But for now, using localStorage token manually if needed or standard fetch
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/users/profile-picture`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Update local user context
+        updateUser({ ...user, profilePicture: data.data.profilePicture });
+        Swal.fire('Success', 'Profile picture updated!', 'success');
+      } else {
+        throw new Error(data.message || 'Upload failed');
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Error', error.message, 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleLogout = () => {
     Swal.fire({
@@ -25,15 +69,33 @@ const UserProfile = () => {
 
   const isHost = user.role === 'host' || user.role === 'showroom';
   // Check either field depending on your backend logic
-  const isVerified = user.isVerified || user.isEmailVerified; 
+  const isVerified = user.isVerified; 
 
   return (
     <div className="max-w-5xl mx-auto">
       {/* 1. HEADER SECTION */}
       <div className="bg-white rounded-2xl p-8 shadow-sm border mb-8 flex flex-col md:flex-row items-center gap-8">
-        <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-full flex items-center justify-center text-4xl font-bold shadow-md">
-          {user.fullName ? user.fullName.charAt(0).toUpperCase() : <User />}
+        
+        {/* Profile Image with Upload Overlay */}
+        <div className="relative group">
+          <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-full flex items-center justify-center text-4xl font-bold shadow-md overflow-hidden border-4 border-white">
+            {user.profilePicture ? (
+               <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+               user.fullName ? user.fullName.charAt(0).toUpperCase() : <User />
+            )}
+          </div>
+          
+          <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer">
+             {uploading ? (
+               <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+             ) : (
+               <span className="text-white text-xs font-bold">Change</span>
+             )}
+             <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
+          </label>
         </div>
+
         <div className="text-center md:text-left flex-grow">
           <h1 className="text-3xl font-bold text-gray-900">{user.fullName || user.showroomName}</h1>
           <p className="text-gray-500 font-medium">{user.email}</p>
