@@ -58,7 +58,6 @@ const DashboardLayout = () => {
             
             {/* COMMON LINKS */}
             <SidebarLink to="/dashboard" icon={<LayoutDashboard className="w-5 h-5"/>} label="Overview" />
-            <SidebarLink to="/dashboard/inbox" icon={<MessageSquare className="w-5 h-5"/>} label="Messages" />
             <SidebarLink to="/dashboard/profile" icon={<User className="w-5 h-5"/>} label="My Profile" />
 
             {/* CUSTOMER LINKS */}
