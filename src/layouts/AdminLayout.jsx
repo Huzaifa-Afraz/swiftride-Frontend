@@ -1,9 +1,8 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
-import { LayoutDashboard, Users, Car, FileText, LogOut, Shield, Building2 } from 'lucide-react'; // Added Building2
+import { LayoutDashboard, Users, Car, FileText, LogOut, Shield, Building2, Banknote } from 'lucide-react'; // Added Building2 & Banknote
 import Swal from 'sweetalert2';
-
 const AdminLayout = () => {
   const { logout } = useAuth();
   const location = useLocation();
@@ -46,6 +45,9 @@ const AdminLayout = () => {
           </Link>
           <Link to="/admin/bookings" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('bookings')}`}>
             <Car className="w-5 h-5" /> All Bookings
+          </Link>
+          <Link to="/admin/withdrawals" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('withdrawals')}`}>
+            <Banknote className="w-5 h-5" /> Withdrawals
           </Link>
           
           <div className="pt-4 pb-2 text-xs font-bold text-indigo-400 uppercase px-4">User Management</div>

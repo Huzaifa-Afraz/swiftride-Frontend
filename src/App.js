@@ -40,6 +40,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminKYC from './pages/admin/AdminKYC';
 import AdminBookings from './pages/admin/AdminBookings';
 import AdminBookingDetail from './pages/admin/AdminBookingDetail';
+import AdminWithdrawals from './pages/admin/AdminWithdrawals';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminHosts from './pages/admin/AdminHosts';
 import AdminShowrooms from './pages/admin/AdminShowrooms';
@@ -110,6 +111,7 @@ function App() {
               <Route path="kyc" element={<AdminKYC />} />
               <Route path="bookings" element={<AdminBookings />} />
               <Route path="bookings/:id" element={<AdminBookingDetail />} />
+              <Route path="withdrawals" element={<AdminWithdrawals />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="hosts" element={<AdminHosts />} />
               <Route path="showrooms" element={<AdminShowrooms />} />
