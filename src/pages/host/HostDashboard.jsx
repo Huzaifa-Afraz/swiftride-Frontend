@@ -73,9 +73,14 @@ const HostDashboard = () => {
         </div>
 
         {/* Link to Add Car (Route is separate or inside dashboard depending on App.js, using standard link) */}
-        <Link to="/host/add-car" className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 flex items-center gap-2">
-          <Car className="w-5 h-5" /> Add New Car
-        </Link>
+        <div className="flex gap-3">
+            <Link to="/host/handover/scan" className="bg-gray-900 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-black transition shadow-lg flex items-center gap-2">
+              <CheckCircle className="w-5 h-5" /> Scan QR
+            </Link>
+            <Link to="/host/add-car" className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 flex items-center gap-2">
+              <Car className="w-5 h-5" /> Add New Car
+            </Link>
+        </div>
       </div>
 
       {/* 1. QUICK STATS ROW */}

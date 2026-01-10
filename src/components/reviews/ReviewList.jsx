@@ -66,13 +66,26 @@ const ReviewList = ({ carId }) => {
                 </div>
               </div>
               <div className="flex gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={16}
-                    className={`${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`}
-                  />
-                ))}
+                {[...Array(5)].map((_, i) => {
+                  const ratingValue = i + 1;
+                  return (
+                    <span key={i} className="relative">
+                      {/* Empty Star Background */}
+                      <Star size={16} className="text-gray-200 absolute top-0 left-0" />
+                      
+                      {/* Full or Half Star */}
+                      {review.rating >= ratingValue ? (
+                        <Star size={16} className="text-yellow-400 fill-yellow-400 relative z-10" />
+                      ) : review.rating >= ratingValue - 0.5 ? (
+                         <div className="relative z-10 w-[8px] overflow-hidden">
+                            <Star size={16} className="text-yellow-400 fill-yellow-400" />
+                         </div>
+                      ) : (
+                         <Star size={16} className="text-gray-200 relative z-10" />
+                      )}
+                    </span>
+                  );
+                })}
               </div>
             </div>
             <p className="text-gray-600 leading-relaxed">{review.comment}</p>

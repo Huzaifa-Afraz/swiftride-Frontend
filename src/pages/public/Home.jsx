@@ -20,7 +20,7 @@ const Home = () => {
         
         // 2. SAFETY CHECK: Extract the array correctly
         // Some APIs return { docs: [] }, others return { data: [] }, or just []
-        const carData = res.data.docs || res.data.cars || res.data;
+        const carData = res.data.docs || res.data.data || res.data;
         
         // Ensure strictly that we are setting an array
         if (Array.isArray(carData)) {
@@ -131,7 +131,7 @@ const handleSearch = () => {
             {/* 3. SAFETY CHECK: Check array length before mapping */}
             {cars && cars.length > 0 ? (
               cars.map(car => (
-                <div key={car._id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
+                <div key={car.id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
                   {/* Image Area */}
                   <div className="relative h-56 bg-gray-200 overflow-hidden">
                     {car.photos && car.photos.length > 0 ? (

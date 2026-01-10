@@ -11,6 +11,12 @@ const reviewService = {
   getCarReviews: async (carId) => {
     const response = await apiClient.get(`/reviews/car/${carId}`);
     return response.data;
+  },
+
+  // Get reviews by current user
+  getMyReviews: async () => {
+    const response = await apiClient.get('/reviews/my-reviews');
+    return response.data;
   }
 };
 

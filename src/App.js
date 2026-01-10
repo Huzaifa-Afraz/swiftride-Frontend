@@ -32,6 +32,8 @@ import OwnerBookings from './pages/host/OwnerBookings';
 import Wallet from './pages/host/Wallet';
 import KYCSubmit from './pages/common/KYCSubmit';
 import Inbox from './pages/common/Inbox';
+import HandoverScanner from './pages/host/HandoverScanner';
+import HandoverProcess from './pages/host/HandoverProcess';
 
 // Admin Pages... (Keep existing imports)
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -94,6 +96,10 @@ function App() {
             <Route element={<DashboardLayout />}>
               <Route path="/host/add-car" element={<AddCar />} />
               <Route path="/host/edit-car/:id" element={<AddCar />} />
+              
+              {/* Handover Routes */}
+              <Route path="/host/handover/scan" element={<HandoverScanner />} />
+              <Route path="/host/handover/:bookingId" element={<HandoverProcess />} />
             </Route>
           </Route>
 

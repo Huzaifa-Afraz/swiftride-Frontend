@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, X } from 'lucide-react';
+import { Star, StarHalf, X } from 'lucide-react';
 import reviewService from '../../services/reviewService';
 import Swal from 'sweetalert2';
 
@@ -30,6 +30,13 @@ const ReviewForm = ({ bookingId, onClose, onSuccess }) => {
     }
   };
 
+  const handleMouseMove = (e, starIndex) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left; // x position within the element.
+    const isHalf = x < rect.width / 2;
+    setHover(isHalf ? starIndex - 0.5 : starIndex);
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-md p-6 relative animate-fade-in shadow-xl">
@@ -45,25 +52,39 @@ const ReviewForm = ({ bookingId, onClose, onSuccess }) => {
 
         <form onSubmit={handleSubmit}>
           <div className="flex justify-center gap-2 mb-8">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                className="transition-transform hover:scale-110 focus:outline-none"
-                onClick={() => setRating(star)}
-                onMouseEnter={() => setHover(star)}
-                onMouseLeave={() => setHover(rating)}
-              >
-                <Star
-                  size={42}
-                  className={`${
-                    star <= (hover || rating)
-                      ? 'text-yellow-400 fill-yellow-400'
-                      : 'text-gray-200'
-                  } transition-colors duration-200`}
-                />
-              </button>
-            ))}
+            {[1, 2, 3, 4, 5].map((star) => {
+               const isFull = (hover || rating) >= star;
+               const isHalf = (hover || rating) === star - 0.5;
+               
+               return (
+                <button
+                  key={star}
+                  type="button"
+                  className="transition-transform hover:scale-110 focus:outline-none relative"
+                  onClick={() => setRating(hover)}
+                  onMouseMove={(e) => handleMouseMove(e, star)}
+                  onMouseLeave={() => setHover(rating)}
+                >
+                  {isHalf ? (
+                     <div className="relative">
+                       <Star size={42} className="text-gray-200" />
+                       <div className="absolute top-0 left-0 overflow-hidden w-1/2">
+                         <Star size={42} className="text-yellow-400 fill-yellow-400" />
+                       </div>
+                     </div>
+                  ) : (
+                    <Star
+                      size={42}
+                      className={`${
+                        isFull
+                          ? 'text-yellow-400 fill-yellow-400'
+                          : 'text-gray-200'
+                      } transition-colors duration-200`}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           <div className="mb-6">
