@@ -4,6 +4,7 @@ import useAuth from '../hooks/useAuth';
 import Footer from '../components/layout/Footer';
 import { LogOut, Car, Menu, X, User } from 'lucide-react';
 import Swal from 'sweetalert2';
+import ChatBot from '../components/common/ChatBot';
 
 const MainLayout = () => {
   const { user, logout } = useAuth();
@@ -77,6 +78,7 @@ const MainLayout = () => {
       </main>
 
       <Footer />
+      <ChatBot />
     </div>
   );
 };

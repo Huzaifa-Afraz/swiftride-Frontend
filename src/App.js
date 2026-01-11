@@ -31,7 +31,6 @@ import AddCar from './pages/host/AddCar';
 import OwnerBookings from './pages/host/OwnerBookings';
 import Wallet from './pages/host/Wallet';
 import KYCSubmit from './pages/common/KYCSubmit';
-import Inbox from './pages/common/Inbox';
 import HandoverScanner from './pages/host/HandoverScanner';
 import HandoverProcess from './pages/host/HandoverProcess';
 
@@ -76,7 +75,8 @@ function App() {
 
               {/* 1. Shared Routes */}
               <Route path="profile" element={<UserProfile />} />
-              <Route path="inbox" element={<Inbox />} />
+              <Route path="profile" element={<UserProfile />} />
+              <Route path="kyc" element={<KYCSubmit />} />
               <Route path="kyc" element={<KYCSubmit />} />
 
               {/* 2. Customer Routes */}

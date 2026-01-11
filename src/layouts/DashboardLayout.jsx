@@ -6,6 +6,7 @@ import {
   Menu, X, Shield, Plus, Home, MessageSquare 
 } from 'lucide-react';
 import Swal from 'sweetalert2';
+import ChatBot from '../components/common/ChatBot';
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
@@ -130,6 +131,7 @@ const DashboardLayout = () => {
           <Outlet />
         </main>
       </div>
+      <ChatBot />
     </div>
   );
 };

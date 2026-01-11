@@ -5,7 +5,6 @@ import {
   PieChart, Pie, Cell 
 } from 'recharts';
 import { Users, Car, Calendar, Activity, AlertTriangle, DollarSign } from 'lucide-react';
-
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
