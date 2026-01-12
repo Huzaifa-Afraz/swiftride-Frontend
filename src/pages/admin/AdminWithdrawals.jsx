@@ -20,7 +20,7 @@ const AdminWithdrawals = () => {
 
   const fetchRequests = async () => {
     try {
-      const res = await apiClient.get('/wallet/admin/withdrawals');
+      const res = await apiClient.get('/wallets/admin/withdrawals');
       // Expecting { success: true, data: { requests: [] } }
       setRequests(res.data.data.requests);
       setLoading(false);
@@ -39,7 +39,7 @@ const AdminWithdrawals = () => {
 
     if (type === 'view_details' && req.user) {
         try {
-            const res = await apiClient.get(`/wallet/admin/wallet/${req.user._id}/pending-earnings`);
+            const res = await apiClient.get(`/wallets/admin/wallet/${req.user._id}/pending-earnings`);
             setPendingDetails(res.data.data.transactions);
         } catch (error) {
             console.error("Failed to load details", error);
@@ -66,7 +66,7 @@ const AdminWithdrawals = () => {
             formData.append("proof", proofFile);
         }
 
-        await apiClient.patch(`/wallet/admin/withdrawals/${selectedRequest._id}`, formData, {
+        await apiClient.patch(`/wallets/admin/withdrawals/${selectedRequest._id}`, formData, {
             headers: { "Content-Type": "multipart/form-data" }
         });
 
