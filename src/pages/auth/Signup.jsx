@@ -27,13 +27,14 @@ const Signup = () => {
       // Get the Google ID Token (not Firebase Token) for backend verification
       const credential = GoogleAuthProvider.credentialFromResult(result);
       const googleIdToken = credential?.idToken;
+      const accessToken = credential?.accessToken;
 
       if (!googleIdToken) {
          throw new Error("Could not retrieve Google ID Token");
       }
       
       // 1. Try login without role
-      const loginResult = await googleLogin({ idToken: googleIdToken });
+      const loginResult = await googleLogin({ idToken: googleIdToken, accessToken });
       
       if (loginResult.success) {
         navigate('/');

@@ -73,6 +73,7 @@ export const AuthProvider = ({ children }) => {
 
   const googleLogin = async (dataPayload) => {
     try {
+      console.log("Google Login Payload:", dataPayload);
       const response = await authService.googleLogin(dataPayload);
       const data = response.data.data || response.data; // Support diverse response shapes
       const { token, user } = data;

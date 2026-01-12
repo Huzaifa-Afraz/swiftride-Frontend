@@ -4,6 +4,7 @@ import useAuth from '../../hooks/useAuth';
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth, googleProvider } from "../../firebase";
 import RoleSelectionModal from '../../components/auth/RoleSelectionModal';
+import Swal from 'sweetalert2';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -21,6 +22,7 @@ const Login = () => {
   // --- Google Login Logic ---
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [tempGoogleCreds, setTempGoogleCreds] = useState(null);
+  const [googleAccessToken, setGoogleAccessToken] = useState(null);
 
   // Helper because context function name collision/confusion
   const { googleLogin } = useAuth();
@@ -32,13 +34,14 @@ const Login = () => {
       // Get the Google ID Token (not Firebase Token) for backend verification
       const credential = GoogleAuthProvider.credentialFromResult(result);
       const googleIdToken = credential?.idToken;
+      const googleAccessToken = credential?.accessToken;
 
       if (!googleIdToken) {
          throw new Error("Could not retrieve Google ID Token");
       }
       
       // 1. Try login without role
-      const loginResult = await googleLogin({ idToken: googleIdToken });
+      const loginResult = await googleLogin({ idToken: googleIdToken, accessToken: googleAccessToken });
       
       if (loginResult.success) {
         navigate('/');
@@ -46,21 +49,31 @@ const Login = () => {
         // 2. If backend says "Role required" (status 400), show modal
         if (loginResult.status === 400) {
            setTempGoogleCreds(googleIdToken);
+            setGoogleAccessToken(googleAccessToken);
            setShowRoleModal(true);
         } else {
-          alert(loginResult.message);
+          Swal.fire({
+            icon: 'error',
+            title: 'Login Failed',
+            text: loginResult.message||'An error occurred during Google login',
+          });
         }
       }
     } catch (error) {
       console.error("Firebase Google Login Error:", error);
-      alert("Google Login Failed: " + error.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Login Failed',
+        text: error.message || 'An error occurred during Google login',
+      });
     }
   };
 
   const handleRoleSelect = async (role, showroomName) => {
     // 3. Retry login WITH role
     const result = await googleLogin({ 
-      idToken: tempGoogleCreds, 
+      idToken: tempGoogleCreds,
+      accessToken: googleAccessToken,
       role, 
       showroomName 
     });
@@ -69,7 +82,11 @@ const Login = () => {
       setShowRoleModal(false);
       navigate('/');
     } else {
-      alert(result.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Login Failed',
+        text: result.message || 'An error occurred during Google login with role selection',
+      });
     }
   };
 
