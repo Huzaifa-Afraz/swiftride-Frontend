@@ -1,8 +1,10 @@
 import { io } from "socket.io-client";
 
-// Use the same server as API (port 5000)
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+// Use the same server as API - matches REACT_APP_API_BASE_URL in .env
+const API_URL =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
 const SOCKET_URL = API_URL.replace("/api", "");
+console.log("🔌 Web Socket URL:", SOCKET_URL);
 
 let socket = null;
 
@@ -47,7 +49,11 @@ export const sendLocation = (bookingId, locationData) => {
       speed: locationData.speed || 0,
       timestamp: new Date().toISOString(),
     });
-    console.log("📍 Sent location:", locationData.latitude, locationData.longitude);
+    console.log(
+      "📍 Sent location:",
+      locationData.latitude,
+      locationData.longitude,
+    );
   }
 };
 
