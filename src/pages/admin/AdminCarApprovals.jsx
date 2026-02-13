@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { carService } from '../../services/carService';
 import { Link } from 'react-router-dom';
-import { Eye, CheckCircle, XCircle, Clock } from 'lucide-react';
-import Swal from 'sweetalert2';
+import { Eye, CheckCircle, Clock } from 'lucide-react';
 
 const AdminCarApprovals = () => {
     const [cars, setCars] = useState([]);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../../services/apiClient';
-import { Check, X, FileText, AlertCircle, Eye, XCircle } from 'lucide-react';
+import { Check, X, AlertCircle, Eye, XCircle } from 'lucide-react';
 import { showAlert } from '../../utils/alert';
 
 // --- HELPER: Convert Windows Path to Server URL ---

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, StarHalf, X } from 'lucide-react';
+import { Star, X } from 'lucide-react';
 import reviewService from '../../services/reviewService';
 import Swal from 'sweetalert2';
 

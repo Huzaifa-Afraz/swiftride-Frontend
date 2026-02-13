@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import { 
   LayoutDashboard, Car, Calendar, User, CreditCard, LogOut, 
-  Menu, X, Shield, Plus, Home, MessageSquare 
+  Menu, Plus,
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import ChatBot from '../components/common/ChatBot';
