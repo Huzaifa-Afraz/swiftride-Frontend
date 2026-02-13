@@ -32,7 +32,7 @@ const AddCar = () => {
 
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEditMode);
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState({ photos: [], insuranceDoc: null });
   const [existingPhotos, setExistingPhotos] = useState([]); // For edit mode display
   
   // Maps State
@@ -67,7 +67,10 @@ const AddCar = () => {
     fuelType: 'Petrol', locationAddress: '', locationLat: '0', locationLng: '0',
     availabilityStartTime: '09:00', availabilityEndTime: '17:00',
     availabilityIsAvailable: true, features: '', 
-    availabilityDaysOfWeek: [1, 2, 3, 4, 5] // Default Mon-Fri
+    availabilityDaysOfWeek: [1, 2, 3, 4, 5], // Default Mon-Fri
+    // Insurance
+    insuranceProvider: '', insurancePolicyNumber: '', insuranceStartDate: '', 
+    insuranceExpiryDate: '', insuranceType: 'Third-Party'
   });
 
   // --- FETCH CAR DATA IF EDIT MODE ---
@@ -108,7 +111,13 @@ const AddCar = () => {
             availabilityEndTime: car.availability?.endTime || '17:00',
             availabilityIsAvailable: car.availability?.isAvailable ?? true,
             availabilityDaysOfWeek: car.availability?.daysOfWeek || [1, 2, 3, 4, 5],
-            features: Array.isArray(car.features) ? car.features.join(', ') : (car.features || '')
+            features: Array.isArray(car.features) ? car.features.join(', ') : (car.features || ''),
+            // Insurance Populate
+            insuranceProvider: car.insuranceDetails?.provider || '',
+            insurancePolicyNumber: car.insuranceDetails?.policyNumber || '',
+            insuranceStartDate: car.insuranceDetails?.startDate ? car.insuranceDetails.startDate.split('T')[0] : '',
+            insuranceExpiryDate: car.insuranceDetails?.expiryDate ? car.insuranceDetails.expiryDate.split('T')[0] : '',
+            insuranceType: car.insuranceDetails?.type || 'Third-Party'
           });
 
           // Set Existing Photos
@@ -189,10 +198,17 @@ const AddCar = () => {
     const isVerified = user?.isVerified || user?.isEmailVerified;
     if (!isVerified) return;
 
-    if (!isEditMode && files.length === 0) {
-      showAlert('Missing Photos', 'Please upload at least one photo.', 'warning');
-      return;
+    if (!isEditMode && (!files.photos || files.photos.length === 0)) {
+       showAlert('Missing Photos', 'Please upload at least one car photo.', 'warning');
+       return;
     }
+    
+    // Insurance validation
+    if (!formData.insuranceProvider || !formData.insurancePolicyNumber || !formData.insuranceExpiryDate) {
+        showAlert('Missing Insurance', 'Please fill all insurance details.', 'warning');
+        return;
+    }
+
     if (formData.locationLat === '0' || formData.locationLng === '0') {
         showAlert('Invalid Location', 'Please pick a location on the map.', 'warning');
         return;
@@ -210,28 +226,29 @@ const AddCar = () => {
 
     // Handle Objects/Arrays manually for FormData
     data.append('availabilityDaysOfWeek', JSON.stringify(formData.availabilityDaysOfWeek));
-    
-    // Features: Ensure strict array format if backend splits by comma or expects array
-    // Assuming backend takes string or we send array. Safest is usually to let backend split string, 
-    // or send JSON string if backend parses it. Based on user JSON response `features: ['abc']`, backend stores array.
-    // Let's send it as simple text, assuming backend splits it, OR keys like `features[0]`. 
-    // SAFEST match to existing createCar logic: append key 'features' as string.
     data.append('features', formData.features); 
 
     // Photos
-    for (let i = 0; i < files.length; i++) data.append('photos', files[i]);
+    if (files.photos) {
+       for (let i = 0; i < files.photos.length; i++) data.append('photos', files.photos[i]);
+    }
+    
+    // Insurance Doc
+    if (files.insuranceDoc) {
+       data.append('insuranceDoc', files.insuranceDoc);
+    }
 
     try {
       if (isEditMode) {
         await carService.updateCar(id, data);
         Swal.fire({
-            icon: 'success', title: 'Updated!', text: 'Vehicle details and availability updated.',
+            icon: 'success', title: 'Updated!', text: 'Vehicle details submitted for review.',
             confirmButtonColor: '#4F46E5'
         }).then(() => navigate('/dashboard/fleet'));
       } else {
         await carService.createCar(data);
         Swal.fire({
-          icon: 'success', title: 'Car Listed!', text: 'Your vehicle is live.',
+          icon: 'success', title: 'Submitted!', text: 'Car submitted for admin approval.',
           confirmButtonColor: '#4F46E5'
         }).then(() => navigate('/dashboard/fleet'));
       }
@@ -242,7 +259,7 @@ const AddCar = () => {
     }
   };
 
-  const handleFileChange = (e) => setFiles(e.target.files);
+  // const handleFileChange = (e) => setFiles(e.target.files);
 
   if (!user || fetching) return <div className="p-10 text-center">Loading vehicle details...</div>;
 
@@ -369,7 +386,47 @@ const AddCar = () => {
           </div>
         </div>
 
-        {/* 4. Photos & Features */}
+        {/* 4. Insurance Details (NEW) */}
+        <div className="p-8 border-b border-gray-100 bg-orange-50/50">
+          <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-orange-600"/> Insurance Details (Required)
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+             <InputGroup label="Insurance Provider" name="insuranceProvider" value={formData.insuranceProvider || ''} placeholder="e.g. State Life, EFU" onChange={handleChange} required />
+             <InputGroup label="Policy Number" name="insurancePolicyNumber" value={formData.insurancePolicyNumber || ''} placeholder="POLICY-GITHUB-123" onChange={handleChange} required />
+             
+             <InputGroup label="Start Date" name="insuranceStartDate" type="date" value={formData.insuranceStartDate || ''} onChange={handleChange} required />
+             <InputGroup label="Expiry Date" name="insuranceExpiryDate" type="date" value={formData.insuranceExpiryDate || ''} onChange={handleChange} required />
+
+             <div className="md:col-span-2">
+                <label className="block text-sm font-bold text-gray-700 mb-2">Insurance Type</label>
+                <select name="insuranceType" value={formData.insuranceType || 'Third-Party'} onChange={handleChange} className="w-full border p-3 rounded-xl bg-white">
+                  <option value="Third-Party">Third-Party (Minimum Required)</option>
+                  <option value="Comprehensive">Comprehensive</option>
+                </select>
+             </div>
+          </div>
+
+          <div className="border-2 border-dashed border-orange-200 bg-orange-50 rounded-xl p-6 text-center">
+            <label className="block text-sm font-bold text-gray-700 mb-2">Upload Insurance Policy Document (Image/PDF)</label>
+            <input 
+              type="file" 
+              accept="image/*,.pdf" 
+              onChange={(e) => setFiles(prev => ({ ...prev, insuranceDoc: e.target.files[0] }))} 
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200"
+              required={!isEditMode} // Required on create
+            />
+            {isEditMode && formData.insuranceDetails?.documentUrl && (
+               <div className="mt-2 text-sm text-blue-600">
+                  <a href={formData.insuranceDetails.documentUrl} target="_blank" rel="noreferrer">View Current Policy</a>
+               </div>
+            )}
+            <p className="text-xs text-gray-400 mt-2">Required for verification. Car will not match registration if missing.</p>
+          </div>
+        </div>
+
+        {/* 5. Photos & Features */}
         <div className="p-8">
           <h3 className="text-lg font-bold text-gray-800 mb-6">Photos & Features</h3>
           <div className="mb-6">
@@ -391,11 +448,11 @@ const AddCar = () => {
           )}
 
           <div className="border-2 border-dashed border-indigo-200 bg-indigo-50 rounded-xl p-8 text-center cursor-pointer relative hover:bg-indigo-100 transition">
-            <input type="file" multiple accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+            <input type="file" multiple accept="image/*" onChange={(e) => setFiles(prev => ({ ...prev, photos: e.target.files }))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
             <div className="flex flex-col items-center pointer-events-none">
               <Upload className="w-6 h-6 text-indigo-600 mb-2" />
-              <span className="font-bold text-indigo-900">Upload New Photos</span>
-              <span className="text-sm text-indigo-600">{files.length > 0 ? `${files.length} selected` : (isEditMode ? "Optional" : "Max 5MB")}</span>
+              <span className="font-bold text-indigo-900">Upload Car Photos</span>
+              <span className="text-sm text-indigo-600">{files.photos?.length > 0 ? `${files.photos.length} selected` : (isEditMode ? "Optional" : "Max 5MB")}</span>
             </div>
           </div>
         </div>

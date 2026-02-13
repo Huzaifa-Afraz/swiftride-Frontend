@@ -27,6 +27,9 @@ const CarDetails = () => {
     endDate: '',
     endTime: '09:00'
   });
+  
+  // State for image gallery
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     carService.getCarDetails(carId)
@@ -34,6 +37,8 @@ const CarDetails = () => {
         // Handle various response structures safety
         const carData = res.data?.data?.car || res.data?.data || res.data;
         setCar(carData);
+        // Set initial selected image
+        if (carData.photos?.length > 0) setSelectedImage(carData.photos[0]);
         
         // Pre-fill time with car's start time if available
         if (carData?.availability?.startTime) {
@@ -170,18 +175,23 @@ const CarDetails = () => {
         
         {/* LEFT: Image Gallery */}
         <div className="space-y-4">
-          <div className="h-96 bg-gray-200 rounded-2xl overflow-hidden shadow-lg">
-            <img 
-              src={car.photos?.[0] || 'https://via.placeholder.com/800x600'} 
-              alt={car.make} 
-              className="w-full h-full object-cover"
-            />
+          <div className="h-96 bg-gray-100 rounded-2xl overflow-hidden shadow-sm border border-gray-200 relative">
+            {selectedImage ? (
+                <img src={selectedImage} alt={car.make} className="w-full h-full object-contain" />
+            ) : (
+                <div className="flex items-center justify-center h-full text-gray-400">No Photos Available</div>
+            )}
           </div>
-          <div className="grid grid-cols-4 gap-4">
-            {car.photos?.slice(1, 5).map((photo, index) => (
-              <div key={index} className="h-24 bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition">
-                <img src={photo} alt="Car View" className="w-full h-full object-cover" />
-              </div>
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {car.photos?.map((photo, index) => (
+              <button 
+                key={index} 
+                onClick={() => setSelectedImage(photo)}
+                className={`relative w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden border-2 transition cursor-pointer 
+                  ${selectedImage === photo ? 'border-indigo-600 ring-2 ring-indigo-200' : 'border-transparent hover:opacity-80'}`}
+              >
+                <img src={photo} alt={`View ${index + 1}`} className="w-full h-full object-cover" />
+              </button>
             ))}
           </div>
         </div>

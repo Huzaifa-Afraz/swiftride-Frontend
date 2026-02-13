@@ -5,6 +5,7 @@ import {
   PieChart, Pie, Cell 
 } from 'recharts';
 import { Users, Car, Calendar, Activity, AlertTriangle, DollarSign } from 'lucide-react';
+import Loader from '../../components/common/Loader';
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +33,8 @@ const AdminDashboard = () => {
     fetchStats();
   }, []);
 
-  if (loading) return <div className="p-10 text-center text-gray-500">Loading dashboard...</div>;
+  // if (loading) return <div className="p-10 text-center text-gray-500">loading.....</div>;
+  if (loading) return <Loader />;
   
   if (error) return (
     <div className="p-10 text-center text-red-500 flex flex-col items-center gap-2">

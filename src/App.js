@@ -43,6 +43,8 @@ import AdminWithdrawals from './pages/admin/AdminWithdrawals';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminHosts from './pages/admin/AdminHosts';
 import AdminShowrooms from './pages/admin/AdminShowrooms';
+import AdminCarApprovals from './pages/admin/AdminCarApprovals';
+import AdminCarReview from './pages/admin/AdminCarReview';
 import useAuth from './hooks/useAuth';
 import PaymentReturn from './pages/public/PaymentReturn';
 import PaymentSuccess from './pages/public/PaymentSuccess';
@@ -115,6 +117,8 @@ function App() {
               <Route path="users" element={<AdminUsers />} />
               <Route path="hosts" element={<AdminHosts />} />
               <Route path="showrooms" element={<AdminShowrooms />} />
+              <Route path="cars/approvals" element={<AdminCarApprovals />} />
+              <Route path="cars/review/:id" element={<AdminCarReview />} />
             </Route>
           </Route>
 

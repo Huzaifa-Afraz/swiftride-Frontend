@@ -49,13 +49,40 @@ const MyCars = () => {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
                 )}
-                <div className={`absolute top-3 right-3 px-2 py-1 rounded text-xs font-bold ${car.availabilityIsAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                  {car.isActive ? 'Active' : 'Inactive'}
+                <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
+                   {/* Approval Status Badge */}
+                   {car.approvalStatus === 'approved' && <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Approved</span>}
+                   {car.approvalStatus === 'pending' && <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-bold">Pending Review</span>}
+                   {car.approvalStatus === 'rejected' && <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">Rejected</span>}
+                   {car.approvalStatus === 'suspended' && <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-bold">Suspended</span>}
+                   
+                   {/* Attempts Counter */}
+                   {car.approvalStatus === 'rejected' && !car.isPermanentlyBanned && (
+                      <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-bold border border-orange-200">
+                        {3 - (car.reviewAttempts || 0)} attempts left
+                      </span>
+                   )}
+                   {/* Permanent Ban Badge */}
+                   {car.isPermanentlyBanned && (
+                      <span className="bg-red-600 text-white px-2 py-1 rounded text-xs font-bold shadow-sm animate-pulse">
+                        PERMANENTLY BANNED
+                      </span>
+                   )}
                 </div>
               </div>
               <div className="p-5">
                 <h3 className="font-bold text-lg mb-1">{car.make} {car.model}</h3>
                 <p className="text-gray-500 text-sm mb-4">{car.year} • {car.plateNumber}</p>
+                
+                {/* Rejection Reason */}
+                {(car.approvalStatus === 'rejected' || car.isPermanentlyBanned) && car.rejectionReason && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-red-700">
+                    <span className="font-bold block mb-1">
+                       {car.isPermanentlyBanned ? 'BANNED REASON:' : 'Action Required:'}
+                    </span>
+                    {car.rejectionReason}
+                  </div>
+                )}
                 
                 <div className="grid grid-cols-2 gap-y-2 text-sm text-gray-600 mb-4">
                   <div className="flex items-center gap-2"><Fuel className="w-4 h-4"/> {car.fuelType}</div>
@@ -66,7 +93,11 @@ const MyCars = () => {
                 <div className="flex justify-between items-center pt-4 border-t">
                   <span className="font-bold text-indigo-600">PKR {car.pricePerDay}/day</span>
                   <div className="flex gap-3">
-                    <Link to={`/host/edit-car/${car._id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">Edit</Link>
+                    {!car.isPermanentlyBanned ? (
+                      <Link to={`/host/edit-car/${car._id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">Edit</Link>
+                    ) : (
+                      <span className="text-sm font-medium text-gray-400 cursor-not-allowed" title="This car is banned">Edit Disabled</span>
+                    )}
                     <Link to={`/cars/${car._id}`} className="text-sm text-gray-500 hover:text-indigo-600">View Listing</Link>
                   </div>
                 </div>
