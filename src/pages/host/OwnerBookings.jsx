@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { bookingService } from '../../services/bookingService';
 import { showAlert } from '../../utils/alert';
-import { Check, X, Clock, User, Calendar } from 'lucide-react';
+import { Check, X, Clock, User, Calendar, QrCode } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import TrackingMap from '../../components/TrackingMap';
 
 const OwnerBookings = () => {
@@ -112,14 +113,14 @@ const OwnerBookings = () => {
                   </>
                 )}
 
-                {/* 2. Confirmed -> Start Booking */}
+                {/* 2. Confirmed -> Scan QR */}
                 {booking.status === 'confirmed' && (
-                  <button 
-                    onClick={() => handleStatusUpdate(booking.id, 'ongoing')}
+                  <Link 
+                    to="/host/handover/scan"
                     className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition text-sm font-medium"
                   >
-                    <Clock className="w-4 h-4" /> Start Booking
-                  </button>
+                    <QrCode className="w-4 h-4" /> Scan QR
+                  </Link>
                 )}
 
                 {/* 3. Ongoing -> Track */}
@@ -136,14 +137,14 @@ const OwnerBookings = () => {
                   </button>
                 )}
                 
-                {/* 4. Complete button (Optional, if needed later) */}
+                {/* 4. Complete button -> Scan Return QR */}
                  {booking.status === 'ongoing' && (
-                  <button 
-                    onClick={() => handleStatusUpdate(booking.id, 'completed')}
-                    className="mt-2 flex items-center justify-center gap-2 bg-green-100 text-green-700 px-4 py-1 rounded hover:bg-green-200 text-xs"
+                  <Link 
+                    to="/host/handover/scan"
+                    className="mt-2 flex items-center justify-center gap-2 bg-green-100 text-green-700 px-4 py-1 rounded hover:bg-green-200 text-xs font-medium border border-green-200"
                   >
-                    Mark Complete
-                  </button>
+                    <QrCode className="w-3 h-3" /> Scan Return
+                  </Link>
                 )}
 
               </div>
